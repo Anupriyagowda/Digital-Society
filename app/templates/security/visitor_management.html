@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Visitor Management{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('security.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4 p-lg-5 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+        <div>
+            <div class="badge bg-primary-subtle text-primary fw-semibold mb-2">Security Control Center</div>
+            <h3 class="fw-bold mb-2">Visitor Management</h3>
+            <p class="text-muted mb-0">Create and monitor visitor entries for the community.</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4 security-section-card">
+    <form method="post" action="{{ url_for('security.create_visitor_request') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="mb-3">
+            <label class="form-label">Visitor Name</label>
+            <input type="text" class="form-control" name="full_name" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-control" name="phone" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Purpose</label>
+            <input type="text" class="form-control" name="purpose" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Entry Time</label>
+            <input type="datetime-local" class="form-control" name="entry_time">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Flat Number</label>
+            <input type="text" class="form-control" name="flat_number" required>
+        </div>
+        <button class="btn btn-primary">Send visitor request</button>
+    </form>
+</div>
+{% endblock %}

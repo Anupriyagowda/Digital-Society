@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}Society Administrator Dashboard{% endblock %}
+
+{% block page_nav %}
+<div class="back-nav-shell">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 dashboard-stat-card bg-primary-subtle">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Approvals</p>
+                        <h3 class="fw-bold mb-0 text-primary">{{ pending_residents }}</h3>
+                    </div>
+                    <i class="bi bi-person-check fs-3 text-primary"></i>
+                </div>
+                <a href="{{ url_for('owner.residents', status='Pending') }}" class="btn btn-sm btn-link mt-2 p-0">Review</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 dashboard-stat-card bg-success-subtle">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Approved Residents</p>
+                        <h3 class="fw-bold mb-0 text-success">{{ approved_residents }}</h3>
+                    </div>
+                    <i class="bi bi-people fs-3 text-success"></i>
+                </div>
+                <a href="{{ url_for('owner.residents', status='Approved') }}" class="btn btn-sm btn-link mt-2 p-0">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 dashboard-stat-card bg-warning-subtle">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Complaints</p>
+                        <h3 class="fw-bold mb-0 text-warning">{{ pending_complaints }}</h3>
+                    </div>
+                    <i class="bi bi-exclamation-circle fs-3 text-warning"></i>
+                </div>
+                <a href="{{ url_for('owner.complaints', status='Pending') }}" class="btn btn-sm btn-link mt-2 p-0">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 dashboard-stat-card bg-info-subtle">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Upcoming Events</p>
+                        <h3 class="fw-bold mb-0 text-info">{{ upcoming_events }}</h3>
+                    </div>
+                    <i class="bi bi-calendar-event fs-3 text-info"></i>
+                </div>
+                <a href="{{ url_for('owner.events') }}" class="btn btn-sm btn-link mt-2 p-0">View</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Maintenance</p>
+                        <h3 class="fw-bold mb-0">{{ pending_maintenance }}</h3>
+                    </div>
+                    <i class="bi bi-tools fs-3 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Bills</p>
+                        <h3 class="fw-bold mb-0">{{ pending_bills }}</h3>
+                    </div>
+                    <i class="bi bi-cash-stack fs-3 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Total Notices</p>
+                        <h3 class="fw-bold mb-0">{{ total_notices }}</h3>
+                    </div>
+                    <i class="bi bi-megaphone fs-3 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Revenue Collected</p>
+                        <h3 class="fw-bold mb-0">₹{{ "{:,.0f}".format(total_revenue) }}</h3>
+                    </div>
+                    <i class="bi bi-graph-up fs-3 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Complaints</h5>
+                    <a href="{{ url_for('owner.complaints') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_complaints %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4">Title</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in recent_complaints %}
+                            <tr>
+                                <td class="px-4"><a href="#" class="text-decoration-none fw-500">{{ complaint.title }}</a></td>
+                                <td><span class="badge bg-light text-dark">{{ complaint.category.name if complaint.category else 'Uncategorized' }}</span></td>
+                                <td>
+                                    {% if complaint.status == 'Pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif complaint.status == 'Resolved' %}
+                                        <span class="badge bg-success">Resolved</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ complaint.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-{{ 'danger' if complaint.priority == 'High' else 'warning' if complaint.priority == 'Medium' else 'info' }}">{{ complaint.priority }}</span></td>
+                                <td class="text-muted small">{{ complaint.created_at.strftime('%d %b, %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4">No complaints yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="card-title mb-0">Upcoming Events</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_events_list %}
+                    {% for event in upcoming_events_list %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="fw-bold mb-1">{{ event.title }}</h6>
+                        <p class="small text-muted mb-2">
+                            <i class="bi bi-calendar"></i> {{ event.start_date.strftime('%d %b, %H:%M') }}
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-geo-alt"></i> {{ event.location or 'TBA' }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-center text-muted">No upcoming events</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('owner.create_notice') }}" class="btn btn-primary w-100 mb-2">
+                    <i class="bi bi-plus-circle me-2"></i> New Notice
+                </a>
+                <a href="{{ url_for('owner.create_event') }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-plus-circle me-2"></i> New Event
+                </a>
+                <a href="{{ url_for('owner.create_activity') }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-plus-circle me-2"></i> New Activity
+                </a>
+                <a href="{{ url_for('owner.residents') }}" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-person-check me-2"></i> Approve Residents
+                </a>
+                <a href="{{ url_for('owner.activity_logs') }}" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-journal-text me-2"></i> View Activity Logs
+                </a>
+                <a href="{{ url_for('admin.amenities') }}" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-calendar2-check me-2"></i> Manage Amenities & Approvals
+                </a>
+                <a href="{{ url_for('emergency.index') }}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Emergency Alerts
+                </a>
+                <a href="{{ url_for('owner.reports') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-bar-chart me-2"></i> View Reports
+                </a>
+                <a href="{{ url_for('meetings.index') }}" class="btn btn-outline-primary w-100 mt-2">
+                    <i class="bi bi-camera-video me-2"></i> Society Meetings
+                </a>
+                <a href="{{ url_for('marketplace.index') }}" class="btn btn-outline-primary w-100 mt-2">
+                    <i class="bi bi-shop me-2"></i> Community Marketplace
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .bg-opacity-10 {
+        opacity: 0.1;
+    }
+</style>
+{% endblock %}

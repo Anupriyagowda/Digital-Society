@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Visitor Approval - Digital Society{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <section class="glass-card p-4 p-lg-5">
+            <h1 class="h3 mb-3">Visitor approval</h1>
+            {% if error_message %}
+            <div class="alert {% if visitor and visitor.status != 'Pending Approval' %}alert-info{% else %}alert-warning{% endif %}" role="status">{{ error_message }}</div>
+            {% endif %}
+            {% if visitor %}
+            <p class="text-muted">Review the request before allowing entry.</p>
+            <dl class="row mb-4">
+                <dt class="col-sm-4">Visitor</dt>
+                <dd class="col-sm-8">{{ visitor.full_name }}</dd>
+                <dt class="col-sm-4">Contact number</dt>
+                <dd class="col-sm-8">{{ visitor.phone or 'Not provided' }}</dd>
+                <dt class="col-sm-4">Flat</dt>
+                <dd class="col-sm-8">{{ visitor.flat_number or 'Not specified' }}</dd>
+                <dt class="col-sm-4">Purpose</dt>
+                <dd class="col-sm-8">{{ visitor.purpose or 'Not provided' }}</dd>
+                <dt class="col-sm-4">Visit time</dt>
+                <dd class="col-sm-8">{{ visitor.entry_time.strftime('%d %b %Y, %I:%M %p') if visitor.entry_time else 'Not specified' }}</dd>
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">{{ visitor.status }}</dd>
+            </dl>
+            {% if token and visitor.status == 'Pending Approval' %}
+            <form method="post" action="{{ url_for('security.email_visitor_approval', token=token) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" type="submit" name="decision" value="allow"><i class="bi bi-check-circle me-1"></i>Allow visitor</button>
+                    <button class="btn btn-outline-danger" type="submit" name="decision" value="reject"><i class="bi bi-x-circle me-1"></i>Reject visitor</button>
+                </div>
+            </form>
+            {% elif token and visitor.status == 'Approved' %}
+            <form method="post" action="{{ url_for('security.email_visitor_approval', token=token) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-outline-danger" type="submit" name="decision" value="reject"><i class="bi bi-x-circle me-1"></i>Reject visitor</button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

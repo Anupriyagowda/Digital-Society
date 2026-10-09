@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}Security Dashboard{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4 p-lg-5 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+        <div>
+            <div class="badge bg-primary-subtle text-primary fw-semibold mb-2">Security Control Center</div>
+            <h3 class="fw-bold mb-2">Monitor visitor movement and resident updates at a glance</h3>
+            <p class="text-muted mb-0">Approve arrivals, check visitors out, and follow up on resident memos from a single polished console.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary" href="{{ url_for('security.digital_pass_scanner') }}"><i class="bi bi-qr-code-scan me-2"></i>Scan Digital Pass</a>
+            <div class="security-summary-card">
+                <div class="small text-muted">Checked in</div>
+                <div class="fw-bold fs-5">{{ visitors|selectattr('status', 'equalto', 'Checked In')|list|length }}</div>
+            </div>
+            <div class="security-summary-card">
+                <div class="small text-muted">Pending memos</div>
+                <div class="fw-bold fs-5">{{ memos|selectattr('status', 'equalto', 'Pending')|list|length }}</div>
+            </div>
+            <div class="security-summary-card">
+                <div class="small text-muted">Open complaints</div>
+                <div class="fw-bold fs-5">{{ complaints|selectattr('status', 'equalto', 'Pending')|list|length }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if memos %}
+<div class="glass-card p-3 p-md-4 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-danger-subtle text-danger fw-semibold">Live</span>
+        <h5 class="fw-bold mb-0">Resident Memo Headlines</h5>
+    </div>
+    <div class="news-ticker-track">
+        <div class="news-ticker-list">
+            {% for memo in memos %}
+            <div class="news-ticker-item">
+                <span class="news-ticker-title">{{ memo.title }}</span>
+                <span class="news-ticker-body">{{ memo.content }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="news-ticker-list" aria-hidden="true">
+            {% for memo in memos %}
+            <div class="news-ticker-item">
+                <span class="news-ticker-title">{{ memo.title }}</span>
+                <span class="news-ticker-body">{{ memo.content }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4 security-section-card" id="visitor-management">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Visitor Management</h4>
+                <span class="badge bg-success-subtle text-success">Entry flow</span>
+            </div>
+            <form method="post" action="{{ url_for('security.create_visitor_request') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="mb-3">
+                    <label class="form-label">Visitor Name</label>
+                    <input type="text" class="form-control" name="full_name" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" name="phone" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Purpose</label>
+                    <input type="text" class="form-control" name="purpose" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Entry Time</label>
+                    <input type="datetime-local" class="form-control" name="entry_time">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Flat Number</label>
+                    <input type="text" class="form-control" name="flat_number" required>
+                </div>
+                <button class="btn btn-primary">Send visitor request</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 security-section-card" id="visitor-requests">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Visitor Requests</h4>
+                <span class="badge bg-warning-subtle text-warning">Live queue</span>
+            </div>
+            {% if visitors %}
+            <div class="d-flex flex-column gap-2">
+                {% for visitor in visitors %}
+                <div class="security-list-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ visitor.full_name }}</div>
+                            <div class="small text-muted">{{ visitor.purpose }} · {{ visitor.phone }} · Flat {{ visitor.flat_number or '—' }}</div>
+                            <div class="small text-muted">Entry: {{ visitor.entry_time.strftime('%Y-%m-%d %H:%M') if visitor.entry_time else '—' }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge badge-soft mb-2">{{ visitor.status }}</div>
+                            {% if visitor.status == 'Approved' %}
+                            <form method="post" action="{{ url_for('security.allow_entry', visitor_id=visitor.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <button class="btn btn-sm btn-success">Allow entry</button>
+                            </form>
+                            {% elif visitor.status == 'Checked In' %}
+                            <form method="post" action="{{ url_for('security.check_out', visitor_id=visitor.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <button class="btn btn-sm btn-outline-danger">Check Out</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No visitor requests yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="glass-card p-4 security-section-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Resident Complaints</h4>
+                <span class="badge bg-warning-subtle text-warning">Needs attention</span>
+            </div>
+            {% if complaints %}
+            <div class="d-flex flex-column gap-2">
+                {% for complaint in complaints %}
+                <div class="security-list-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ complaint.title }}</div>
+                            <div class="small text-muted">{{ complaint.description or 'No details provided.' }}</div>
+                            <div class="small text-muted">Flat {{ complaint.flat_number or '—' }} · {{ complaint.created_at.strftime('%Y-%m-%d %H:%M') if complaint.created_at else '—' }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge bg-warning text-dark">{{ complaint.status }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No resident complaints yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 security-section-card" id="resident-memos">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Resident Memos</h4>
+                <span class="badge bg-info-subtle text-info">Follow-up</span>
+            </div>
+            {% if memos %}
+            <div class="d-flex flex-column gap-2">
+                {% for memo in memos %}
+                <div class="security-list-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ memo.title }}</div>
+                            <div class="small text-muted">{{ memo.content }}</div>
+                            <div class="small text-muted">From: {{ memo.resident.user.first_name if memo.resident and memo.resident.user else 'Unknown resident' }} {{ memo.resident.user.last_name if memo.resident and memo.resident.user else '' }} · Flat {{ memo.resident.flat.number if memo.resident and memo.resident.flat else '—' }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge badge-soft mb-2">{{ memo.status }}</div>
+                            {% if memo.status != 'Followed' %}
+                            <form method="post" action="{{ url_for('security.follow_memo', memo_id=memo.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <button class="btn btn-sm btn-outline-secondary">Follow</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No memos from residents yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

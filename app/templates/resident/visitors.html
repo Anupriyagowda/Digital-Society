@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Visitor Requests{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <h4 class="fw-bold mb-3">Visitor requests</h4>
+    {% if visitors %}
+    <ul class="list-group list-group-flush">
+        {% for visitor in visitors %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+                <div class="fw-semibold">{{ visitor.full_name }}</div>
+                <div class="small text-muted">{{ visitor.purpose }} · {{ visitor.phone }} · Flat {{ visitor.flat_number or '—' }}</div>
+                <div class="small text-muted">Entry: {{ visitor.entry_time.strftime('%Y-%m-%d %H:%M') if visitor.entry_time else '—' }}</div>
+            </div>
+            <div class="text-end">
+                <div class="badge badge-soft mb-2">{{ visitor.status }}</div>
+                <div><a class="btn btn-sm btn-outline-secondary mb-2" target="_blank" href="{{ url_for('resident.download_visitor', visitor_id=visitor.id, preview=1) }}"><i class="bi bi-eye me-1"></i>Preview PDF</a></div>
+                {% if visitor.status == 'Pending Approval' %}
+                <div class="d-flex gap-2">
+                    <form method="post" action="{{ url_for('resident.approve_visitor', visitor_id=visitor.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button class="btn btn-sm btn-success">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('resident.reject_visitor', visitor_id=visitor.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button class="btn btn-sm btn-outline-danger">Reject</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted mb-0">No visitor requests for your flat.</p>
+    {% endif %}
+</div>
+{% endblock %}

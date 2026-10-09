@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Event Details{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">{{ event.title }}</h4>
+            <p class="text-muted small mb-0">{{ event.event_type }} • {{ event.location or 'Location TBA' }}</p>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-outline-secondary" href="{{ url_for('owner.events') }}">Back to events</a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Delete</button>
+        </div>
+        <form id="delete-event-form" action="{{ url_for('owner.delete_event', event_id=event.id) }}" method="post" style="display:none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        </form>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <h6 class="fw-semibold">Description</h6>
+                <p class="text-muted">{{ event.description or 'No description provided.' }}</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="glass-card p-3 bg-light">
+                        <div class="text-muted small">Start</div>
+                        <div class="fw-semibold">{{ event.start_date.strftime('%d %b %Y, %H:%M') }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="glass-card p-3 bg-light">
+                        <div class="text-muted small">End</div>
+                        <div class="fw-semibold">{{ event.end_date.strftime('%d %b %Y, %H:%M') }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mt-3">
+                <div class="col-sm-6">
+                    <div class="glass-card p-3 bg-light">
+                        <div class="text-muted small">Participants</div>
+                        <div class="fw-semibold">{{ participant_count }} / {{ event.max_capacity }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="glass-card p-3 bg-light">
+                        <div class="text-muted small">Status</div>
+                        <div class="fw-semibold">{{ event.status }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card p-4 h-100">
+                {% if resident %}
+                    {% if registered %}
+                        <span class="badge bg-success mb-3">Already registered</span>
+                    {% elif participant_count >= event.max_capacity %}
+                        <span class="badge bg-danger mb-3">Fully booked</span>
+                    {% else %}
+                        <form action="{{ url_for('event.register', event_id=event.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button class="btn btn-primary w-100">Register for Event</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+        {% if activity_summaries %}
+    <div class="mt-4">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-semibold mb-0">Event Activities</h6>
+                <span class="badge bg-secondary">{{ activity_summaries|length }}</span>
+            </div>
+            <div class="accordion" id="eventActivityAccordion">
+                {% for summary in activity_summaries %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ summary.activity.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ summary.activity.id }}" aria-expanded="false" aria-controls="collapse{{ summary.activity.id }}">
+                            <div>
+                                <div class="fw-semibold">{{ summary.activity.title }}</div>
+                                <div class="text-muted small">{{ summary.activity.description or 'No activity description.' }}</div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ summary.activity.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ summary.activity.id }}" data-bs-parent="#eventActivityAccordion">
+                        <div class="accordion-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="text-muted small">Limit: {{ summary.activity.max_participants }} participants</div>
+                                <span class="badge bg-{{ 'success' if summary.activity.status == 'Active' else 'secondary' }}">{{ summary.activity.status }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="fw-semibold">Registrations</div>
+                                <div class="text-muted small">{{ summary.count }} / {{ summary.activity.max_participants }} joined</div>
+                            </div>
+                            {% if summary.participants %}
+                            <ul class="list-group list-group-flush">
+                                {% for participant in summary.participants %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold">{{ participant.resident.user.first_name or participant.resident.user.username }}{% if participant.resident.user.last_name %} {{ participant.resident.user.last_name }}{% endif %}</div>
+                                        <small class="text-muted">{{ participant.resident.flat.number if participant.resident.flat else 'No flat assigned' }}</small>
+                                    </div>
+                                    <span class="badge bg-success">{{ participant.status }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted mb-0">No residents have registered for this activity yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="mt-4">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-semibold mb-0">Registered Residents</h6>
+                    <span class="badge bg-secondary">{{ participants|length }}</span>
+                </div>
+                {% if participants %}
+                    <ul class="list-group list-group-flush">
+                        {% for participant in participants %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">{{ participant.resident.user.first_name or participant.resident.user.username }}{% if participant.resident.user.last_name %} {{ participant.resident.user.last_name }}{% endif %}</div>
+                                <small class="text-muted">{{ participant.resident.flat.number if participant.resident.flat else 'No flat assigned' }}</small>
+                            </div>
+                            <span class="badge bg-success">{{ participant.status }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No residents have registered yet for this event.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this event? This will remove all associated registrations.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-button">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForm = document.getElementById('delete-event-form');
+        const confirmButton = document.getElementById('confirm-delete-button');
+        if (deleteForm && confirmButton) {
+            confirmButton.addEventListener('click', function () {
+                deleteForm.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}

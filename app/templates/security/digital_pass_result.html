@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Pass Verification{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('security.digital_pass_scanner') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4 p-md-5 mx-auto" style="max-width: 620px;">
+    <div class="text-center mb-4">
+        <div class="display-4 text-{{ 'success' if is_active else 'danger' }}"><i class="bi bi-{{ 'check-circle-fill' if is_active else 'x-circle-fill' }}"></i></div>
+        <h2 class="fw-bold">{{ 'Pass verified' if is_active else 'Pass inactive' }}</h2>
+        <p class="text-muted mb-0">{{ 'Entry may be allowed.' if is_active else 'Do not allow entry.' }}</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-6"><small class="text-muted d-block">Name</small><strong>{{ resident.user.first_name or resident.user.username }} {{ resident.user.last_name or '' }}</strong></div>
+        <div class="col-6"><small class="text-muted d-block">Flat number</small><strong>{{ flat_number }}</strong></div>
+        <div class="col-6"><small class="text-muted d-block">Resident type</small><strong>{{ resident.resident_type or 'Not specified' }}</strong></div>
+        <div class="col-6"><small class="text-muted d-block">Society</small><strong>{{ society_name }}</strong></div>
+        <div class="col-12"><small class="text-muted d-block">Current status</small><strong class="text-{{ 'success' if is_active else 'danger' }}">{{ 'Active' if is_active else 'Inactive' }}</strong></div>
+    </div>
+    <a class="btn btn-outline-primary mt-4" href="{{ url_for('security.digital_pass_scanner') }}">Scan another pass</a>
+</div>
+{% endblock %}

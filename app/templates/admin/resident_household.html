@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Resident Household Details{% endblock %}
+{% block content %}
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h4 class="fw-bold mb-1">{{ resident.user.first_name or resident.user.username }}: Household Details</h4><p class="text-muted small mb-0">Restricted administrative view.</p></div>
+        <a class="btn btn-sm back-btn" href="{{ url_for('admin.residents') }}" data-fallback-url="{{ url_for('admin.residents') }}"><i class="bi bi-arrow-left me-2"></i>Back to residents</a>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4"><h6 class="fw-bold">Family members</h6>{% for member in family_members %}<p class="small">{{ member.name }} ({{ member.relationship }})</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}</div>
+        <div class="col-md-4"><h6 class="fw-bold">Emergency contacts</h6>{% for contact in emergency_contacts %}<p class="small">{{ contact.name }} ({{ contact.relationship }})<br>{{ contact.phone }}</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}</div>
+        <div class="col-md-4"><h6 class="fw-bold">Authorized people</h6>{% for person in authorized_people %}<p class="small">{{ person.name }}{% if person.relationship %} ({{ person.relationship }}){% endif %}<br>{{ person.phone or 'No phone' }}</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}</div>
+    </div>
+</div>
+{% endblock %}

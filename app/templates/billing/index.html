@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.razorpay-pay').forEach((button) => {
+            button.addEventListener('click', async function () {
+                button.disabled = true;
+                const billId = button.dataset.billId;
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+                try {
+                    const orderResponse = await fetch(`/billing/create-order/${billId}`, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrfToken}
+                    });
+                    const order = await orderResponse.json();
+                    if (!orderResponse.ok) throw new Error(order.error || 'Could not create payment order');
+
+                    const checkout = new Razorpay({
+                        key: order.key_id,
+                        amount: order.amount,
+                        currency: order.currency,
+                        name: 'Digital Society',
+                        description: `Bill #${billId}`,
+                        order_id: order.order_id,
+                        handler: async function (response) {
+                            const verifyResponse = await fetch('/billing/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify({
+                                    bill_id: billId,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+                            if (!verifyResponse.ok) throw new Error('Payment verification failed');
+                            window.location.reload();
+                        },
+                        modal: {ondismiss: () => { button.disabled = false; }}
+                    });
+                    checkout.on('payment.failed', async function () {
+                        await fetch('/billing/payment-failed', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+                            body: JSON.stringify({bill_id: billId})
+                        });
+                        button.disabled = false;
+                    });
+                    checkout.open();
+                } catch (error) {
+                    alert(error.message);
+                    button.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <h4>{{ bill_heading }}</h4>
+            <p class="text-muted small mb-3">{{ bill_description }}</p>
+            {% if bills %}
+            <ul class="list-group list-group-flush">
+                {% for bill in bills %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold">{{ bill.bill_type }}</div>
+                        {% if bill.payment_status == 'Paid' %}
+                        {% set paid_payment = (paid_payments|default({})).get(bill.id) %}
+                        <div class="small text-success">Paid {{ paid_payment.created_at.strftime('%d %b %Y, %H:%M') if paid_payment and paid_payment.created_at else (bill.payment_date.strftime('%d %b %Y') if bill.payment_date else '—') }}</div>
+                        {% else %}
+                        <div class="small text-muted">Due {{ bill.due_date.strftime('%d %b %Y') if bill.due_date else '—' }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-semibold">₹{{ "{:,.0f}".format(bill.amount) }}</div>
+                        <div class="small text-muted">{{ bill.payment_status }}</div>
+                        <a class="btn btn-sm btn-outline-secondary mt-2" target="_blank" href="{{ url_for('resident.download_bill', bill_id=bill.id, preview=1) }}"><i class="bi bi-eye me-1"></i>Preview Bill</a>
+                        {% if bill.payment_status != 'Paid' %}
+                        <form class="mt-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="button" class="btn btn-sm btn-success razorpay-pay" data-bill-id="{{ bill.id }}">Pay with Razorpay</button>
+                            <div class="small text-muted mt-1">UPI, Google Pay, PhonePe, cards, or net banking</div>
+                        </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">No bills available for your account.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-4 mb-4">
+            <h4>Last Payment</h4>
+            {% if last_payment %}
+            <div class="border rounded p-3">
+                <div class="fw-semibold">₹{{ "{:,.0f}".format(last_payment.amount) }}</div>
+                <div class="small text-muted">{{ last_payment.payment_method }} · {{ last_payment.transaction_id or 'N/A' }}</div>
+                <div class="small text-muted">{{ last_payment.created_at.strftime('%d %b %Y, %H:%M') if last_payment.created_at else '—' }}</div>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No payments yet.</p>
+            {% endif %}
+        </div>
+        <div class="card p-4">
+            <h4>Payment History</h4>
+            {% if payments %}
+            <ul class="list-group list-group-flush">
+                {% for payment in payments %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold">₹{{ "{:,.0f}".format(payment.amount) }}</div>
+                        <div class="small text-muted">{{ payment.transaction_id or 'N/A' }}</div>
+                    </div>
+                    <div class="small text-muted">{{ payment.created_at.strftime('%d %b %Y') if payment.created_at else '—' }}</div>
+                    <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('billing.payment_receipt', payment_id=payment.id, preview=1) }}" title="Preview receipt"><i class="bi bi-eye"></i></a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">No payment history yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

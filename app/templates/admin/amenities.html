@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Amenity Management{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('admin.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold mb-1">Add an amenity</h5>
+            <p class="text-muted small mb-4">Create spaces residents can request.</p>
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" placeholder="Gym, Event Hall, Clubhouse" required></div>
+                <div class="mb-3"><label class="form-label">Location <span class="text-muted">(optional)</span></label><input class="form-control" name="location"></div>
+                <div class="mb-3"><label class="form-label">Description <span class="text-muted">(optional)</span></label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                <div class="row g-3 mb-3"><div class="col-4"><label class="form-label">Capacity</label><input class="form-control" type="number" name="capacity" min="1" value="1" required></div><div class="col-4"><label class="form-label">Opens</label><input class="form-control" type="time" name="opening_time"></div><div class="col-4"><label class="form-label">Closes</label><input class="form-control" type="time" name="closing_time"></div></div>
+                <button class="btn btn-primary w-100" type="submit">Add amenity</button>
+            </form>
+        </div>
+        <div class="glass-card p-4 mt-4">
+            <h5 class="fw-bold mb-3">Available spaces</h5>
+            {% for amenity in amenities %}
+            <div class="d-flex justify-content-between align-items-center border-bottom py-3"><div><div class="fw-semibold">{{ amenity.name }}</div><small class="text-muted">{{ amenity.location or 'No location' }} · Capacity {{ amenity.capacity }}</small></div><form method="post" action="{{ url_for('admin.toggle_amenity', amenity_id=amenity.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm {% if amenity.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit">{{ 'Disable' if amenity.is_active else 'Enable' }}</button></form></div>
+            {% else %}<p class="text-muted mb-0">No amenities created yet.</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0">Booking requests</h5><span class="badge badge-soft">Administrator review</span></div>
+            {% if bookings %}
+            <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Resident</th><th>Amenity</th><th>Schedule</th><th>Status</th><th>Decision</th></tr></thead><tbody>
+            {% for booking in bookings %}
+            <tr><td>{{ booking.resident.user.first_name or booking.resident.user.username }} {{ booking.resident.user.last_name or '' }}<br><small class="text-muted">{{ booking.resident.flat.number if booking.resident.flat else 'No flat' }}</small></td><td>{{ booking.amenity.name }}<br><small class="text-muted">{{ booking.purpose or 'Community use' }}</small></td><td>{{ booking.booking_date.strftime('%d %b %Y') }}<br><small class="text-muted">{{ booking.start_time.strftime('%H:%M') }} - {{ booking.end_time.strftime('%H:%M') }}</small></td><td><span class="badge {% if booking.status == 'Approved' %}bg-success{% elif booking.status in ['Rejected', 'Cancelled'] %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ booking.status }}</span></td><td>{% if booking.status == 'Pending' %}<div class="d-flex gap-1"><form method="post" action="{{ url_for('admin.update_amenity_booking_status', booking_id=booking.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-success" name="status" value="Approved" type="submit">Approve</button><button class="btn btn-sm btn-outline-danger" name="status" value="Rejected" type="submit">Reject</button></form></div>{% else %}<small class="text-muted">Reviewed</small>{% endif %}</td></tr>
+            {% endfor %}
+            </tbody></table></div>
+            {% else %}<p class="text-muted mb-0">No booking requests yet.</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

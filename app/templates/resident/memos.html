@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Memos to Security{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <h4 class="fw-bold mb-3">Memo to security</h4>
+    <form method="post" class="mb-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" name="content" rows="4" required></textarea>
+        </div>
+        <button class="btn btn-primary">Send memo</button>
+    </form>
+
+    {% if memos %}
+    <ul class="list-group list-group-flush">
+        {% for memo in memos %}
+        <li class="list-group-item">
+            <div class="fw-semibold">{{ memo.title }}</div>
+            <div class="small text-muted">{{ memo.content }}</div>
+            <div class="small text-muted">Status: {{ memo.status }}</div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted mb-0">No memos sent yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

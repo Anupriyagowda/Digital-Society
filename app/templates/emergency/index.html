@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Alerts{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Emergency Alerts</h3>
+        <p class="text-muted small mb-0">Urgent safety updates for fire, theft, medical, water, and power incidents.</p>
+    </div>
+</div>
+{% if can_create %}
+<div class="glass-card p-3 p-md-4 mb-4">
+    <h5 class="fw-bold mb-3">Send an alert</h5>
+    <form method="post" action="{{ url_for('emergency.create') }}" class="row g-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3"><label class="form-label" for="alert_type">Type</label><select class="form-select" id="alert_type" name="alert_type" required>{% for alert_type in alert_types %}<option value="{{ alert_type }}">{{ alert_type }}</option>{% endfor %}</select></div>
+        <div class="col-md-3"><label class="form-label" for="severity">Severity</label><select class="form-select" id="severity" name="severity" required>{% for severity in severities %}<option value="{{ severity }}">{{ severity }}</option>{% endfor %}</select></div>
+        <div class="col-md-6"><label class="form-label" for="message">What happened?</label><textarea class="form-control" id="message" name="message" rows="2" maxlength="2000" required></textarea></div>
+        <div class="col-12"><button class="btn btn-danger" type="submit"><i class="bi bi-exclamation-triangle-fill me-1"></i>Send emergency alert</button></div>
+    </form>
+</div>
+{% endif %}
+<div class="d-flex flex-column gap-3">
+{% for alert in alerts %}
+<article class="glass-card p-3 p-md-4 border-start border-4 {% if alert.severity == 'Critical' %}border-danger{% elif alert.severity == 'High' %}border-warning{% else %}border-info{% endif %}">
+    <div class="d-flex justify-content-between gap-3 flex-wrap">
+        <div><span class="badge text-bg-danger">{{ alert.alert_type }}</span> <span class="badge text-bg-secondary">{{ alert.severity }}</span><h5 class="fw-bold mt-2 mb-1">Emergency alert</h5><p class="mb-2">{{ alert.message }}</p><small class="text-muted">{{ alert.created_at.strftime('%d %b %Y, %H:%M') }}</small></div>
+        {% if alert.id in acknowledged_ids %}<span class="badge text-bg-success align-self-start">Acknowledged</span>{% else %}<form method="post" action="{{ url_for('emergency.acknowledge', alert_id=alert.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-success btn-sm" type="submit">Acknowledge</button></form>{% endif %}
+    </div>
+</article>
+{% else %}<div class="glass-card p-4"><p class="text-muted mb-0">No emergency alerts have been issued.</p></div>{% endfor %}
+</div>
+{% endblock %}

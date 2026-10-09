@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{{ heading }}{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.reports') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">{{ heading }}</h3>
+        <p class="text-muted small mb-0">Review resident billing records and payment status.</p>
+    </div>
+    <div class="btn-group background-filter-group" role="group" aria-label="Bill status filter">
+        <a class="btn btn-sm btn-outline-secondary {% if current_status == 'all' %}active{% endif %}" href="{{ url_for('owner.report_bills', status='all') }}">All</a>
+        <a class="btn btn-sm btn-outline-warning {% if current_status == 'pending' %}active{% endif %}" href="{{ url_for('owner.report_bills', status='pending') }}">Pending</a>
+        <a class="btn btn-sm btn-outline-success {% if current_status == 'paid' %}active{% endif %}" href="{{ url_for('owner.report_bills', status='paid') }}">Paid</a>
+    </div>
+</div>
+<div class="glass-card p-0">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Resident</th>
+                    <th>Flat</th>
+                    <th>Bill type</th>
+                    <th>Amount</th>
+                    <th>Due date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ bill.resident.user.first_name or bill.resident.user.username }}{% if bill.resident.user.last_name %} {{ bill.resident.user.last_name }}{% endif %}</div>
+                        <div class="text-muted small">{{ bill.resident.user.email }}</div>
+                    </td>
+                    <td>{{ bill.resident.flat.number if bill.resident.flat else 'Unassigned' }}</td>
+                    <td>{{ bill.bill_type }}</td>
+                    <td>Rs {{ "{:,.2f}".format(bill.amount) }}</td>
+                    <td>{{ bill.due_date.strftime('%Y-%m-%d') if bill.due_date else '—' }}</td>
+                    <td><span class="badge bg-{{ 'success' if bill.payment_status == 'Paid' else 'warning' }}">{{ bill.payment_status or bill.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No bills found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

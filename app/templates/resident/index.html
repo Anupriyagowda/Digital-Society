@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block body_class %}resident-bg{% endblock %}
+{% block title %}Resident Portal{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="hero-card p-4 p-lg-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                <div>
+                    <div class="badge bg-white text-primary fw-semibold mb-2">Resident Hub</div>
+                    <h3 class="fw-bold mb-3">Everything you need, in one calm view</h3>
+                    <p class="mb-0 opacity-90">Track services, manage approvals, and stay connected with society updates without feeling overwhelmed.</p>
+                </div>
+                <div class="resident-pill">Quick access</div>
+            </div>
+        </div>
+
+        <div class="glass-card p-4 mt-4 resident-section-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Your resident essentials</h5>
+                <span class="badge bg-success-subtle text-success">Updated</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="resident-info-card h-100">
+                        <div class="fw-semibold mb-1">Service requests</div>
+                        <div class="small text-muted">Submit complaints or maintenance requests quickly and keep everything organised in one place.</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="resident-info-card h-100">
+                        <div class="fw-semibold mb-1">Visitor approvals</div>
+                        <div class="small text-muted">Approve or reject visitor requests before security allows entry to your flat.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 resident-section-card">
+            <h6 class="fw-bold">Quick links</h6>
+            <div class="d-grid gap-2 mt-3">
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.complaints') }}">Submit complaint</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.maintenance') }}">Request maintenance</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.bills') }}">View bills</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.visitors') }}">Visitor requests</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.amenities') }}">Book an amenity</a>
+                <a class="btn btn-outline-danger" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Emergency alerts</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('meetings.index') }}"><i class="bi bi-camera-video me-2"></i>Society meetings</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('marketplace.index') }}"><i class="bi bi-shop me-2"></i>Community marketplace</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('resident.memos') }}">Memo history</a>
+            </div>
+        </div>
+
+        <div class="glass-card p-4 mt-4 resident-section-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Send a memo</h6>
+                <span class="badge bg-warning-subtle text-warning">Small</span>
+            </div>
+            <form method="post" action="{{ url_for('resident.memos') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-control" name="content" rows="3" required></textarea>
+                </div>
+                <button class="btn btn-primary w-100">Send memo</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-4">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Society Notices</h5>
+                    <p class="text-muted small mb-0">Updates, reminders, and service alerts shared by the society administrator.</p>
+                </div>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('notice.index') }}">All notices</a>
+            </div>
+            {% if notices %}
+            <ul class="list-group list-group-flush">
+                {% for notice in notices %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ notice.title }}</div>
+                            <div class="small text-muted mt-1">{{ notice.notice_type }} • {{ notice.created_at.strftime('%b %d, %Y') }}</div>
+                            <div class="mt-2">{{ notice.content }}</div>
+                        </div>
+                        {% if notice.is_pinned %}
+                        <span class="badge bg-warning text-dark">Pinned</span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">No society notices available right now.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-4">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Upcoming Community Events</h5>
+                    <p class="text-muted small mb-0">Events posted by the society administrator that you can view and register for.</p>
+                </div>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('event.index') }}">All events</a>
+            </div>
+            {% if events %}
+            <ul class="list-group list-group-flush">
+                {% for event in events %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">{{ event.title }}</div>
+                        <small class="text-muted">{{ event.start_date.strftime('%Y-%m-%d') }}{% if event.location %} • {{ event.location }}{% endif %}</small>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if event.id in registrations %}
+                        <span class="badge bg-success">Registered</span>
+                        {% endif %}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('event.detail', event_id=event.id) }}">View Event</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">No upcoming events are available right now.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-4">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Activity Participation</h5>
+                    <p class="text-muted small mb-0">Pick activities like Singing, Dancing, Anchoring and register to participate.</p>
+                </div>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('resident.activities') }}">All activities</a>
+            </div>
+            {% if activities %}
+            <ul class="list-group list-group-flush">
+                {% for activity in activities %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">{{ activity.title }}</div>
+                        <div class="small text-muted">Limit: {{ activity.max_participants }} participants{% if activity.event %} • {{ activity.event.title }}{% endif %}</div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if activity.id in activity_registrations %}
+                        <span class="badge bg-success">Registered</span>
+                        {% endif %}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('resident.activity_detail', activity_id=activity.id) }}">View Activity</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">No activities are available right now.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

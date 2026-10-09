@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} Preview{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+    <div class="pdf-preview-heading">
+        <h3 class="fw-bold mb-1">{{ title }} Preview</h3>
+        <p class="text-muted small mb-0">Review the document before downloading it.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm back-btn" href="{{ back_url }}" data-fallback-url="{{ back_url }}"><i class="bi bi-arrow-left me-2"></i>Back</a>
+        <a class="btn btn-primary" href="{{ download_url }}"><i class="bi bi-download me-2"></i>Download PDF</a>
+    </div>
+</div>
+<div class="glass-card p-2" style="height: 75vh;">
+    <iframe class="w-100 h-100 border-0" src="{{ pdf_url }}" title="{{ title }} PDF preview"></iframe>
+</div>
+{% endblock %}

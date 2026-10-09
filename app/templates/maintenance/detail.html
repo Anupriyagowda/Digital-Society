@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance Request Detail{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Maintenance Request</h3>
+        <p class="text-muted small mb-0">Update the request status and track progress.</p>
+    </div>
+    <a class="btn btn-sm back-btn" href="{{ url_for('maintenance.index') }}" data-fallback-url="{{ url_for('maintenance.index') }}"><i class="bi bi-arrow-left me-2"></i>Back to requests</a>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold">{{ maintenance.title }}</h5>
+            <p class="text-muted mb-2">Submitted by {{ maintenance.resident.user.first_name or maintenance.resident.user.username }}</p>
+            <p class="mb-3">{{ maintenance.description }}</p>
+            <p><strong>Status:</strong> <span class="badge bg-{{ 'warning' if maintenance.status == 'Pending' else 'info' if maintenance.status == 'In Progress' else 'success' }}">{{ maintenance.status }}</span></p>
+            <p><strong>Priority:</strong> {{ maintenance.priority }}</p>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Update Status</h5>
+            <form method="post" action="{{ url_for('maintenance.update_maintenance_status', request_id=maintenance.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for status in status_options %}
+                        <option value="{{ status }}" {% if maintenance.status == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Progress Note</label>
+                    <textarea class="form-control" name="note" rows="3" placeholder="Add a note about the work done"></textarea>
+                </div>
+                <button class="btn btn-primary">Save Update</button>
+            </form>
+        </div>
+        <div class="glass-card p-4 mt-4">
+            <h5 class="fw-semibold mb-3">Request History</h5>
+            <ul class="list-group list-group-flush">
+                {% for history in maintenance.histories %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>{{ history.status }}</strong>
+                            <div class="small text-muted">{{ history.note }}</div>
+                        </div>
+                        <div class="small text-muted">{{ history.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

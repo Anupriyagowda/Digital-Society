@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Authorized People{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('security.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <h4 class="fw-bold mb-1">Authorized People Lookup</h4>
+    <p class="text-muted small">Security view shows entry permissions only.</p>
+    <form class="row g-2 mb-4" method="get">
+        <div class="col-md-8"><label class="form-label">Flat number</label><input class="form-control" name="flat_number" value="{{ flat_number }}" required></div>
+        <div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary w-100">Search</button></div>
+    </form>
+    {% if flat_number %}
+        {% if people %}
+        <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Name</th><th>Relationship</th><th>Phone</th><th>Vehicle</th><th>Validity</th></tr></thead><tbody>
+        {% for person in people %}<tr><td>{{ person.name }}</td><td>{{ person.relationship or '—' }}</td><td>{{ person.phone or '—' }}</td><td>{{ person.vehicle_number or '—' }}</td><td>{{ person.valid_from or 'Any date' }}{% if person.valid_until %} to {{ person.valid_until }}{% endif %}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}<p class="text-muted mb-0">No active authorized people found for this flat.</p>{% endif %}
+    {% endif %}
+</div>
+{% endblock %}

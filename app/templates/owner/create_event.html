@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Create Event{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Create Event</h4>
+            <p class="text-muted small mb-0">Launch a new society event and add guest registration.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('owner.events') }}">Back to events</a>
+    </div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input class="form-control" name="title" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4"></textarea>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Start Date</label>
+                <input class="form-control" type="datetime-local" name="start_date" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">End Date</label>
+                <input class="form-control" type="datetime-local" name="end_date" required />
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input class="form-control" name="location" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Event Type</label>
+                <select class="form-select" name="event_type">
+                    <option>General</option>
+                    <option>Festival</option>
+                    <option>Meeting</option>
+                    <option>Sports</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Max Capacity</label>
+                <input class="form-control" type="number" name="max_capacity" value="100" min="1" />
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-semibold mb-0">Activities</h5>
+                <span class="text-muted small">Add up to 3 event activities</span>
+            </div>
+            {% for activity_index in range(3) %}
+            <div class="border rounded p-3 mb-3">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Activity Name</label>
+                        <input class="form-control" name="activity_title[]" placeholder="Singing, Dancing, Anchoring" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Participant Limit</label>
+                        <input class="form-control" type="number" name="activity_max_participants[]" value="20" min="1" />
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Description</label>
+                    <input class="form-control" name="activity_description[]" placeholder="Optional description" />
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn btn-primary">Create Event</button>
+    </form>
+</div>
+{% endblock %}

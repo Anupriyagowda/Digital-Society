@@ -1,0 +1,372 @@
+sqlite> .quit
+(.venv) PS C:\Users\Anupriya\OneDrive\my_project_extracts\DS (1)> sqlite3 digital_society.db
+SQLite version 3.50.4 2025-07-30 19:33:53
+Enter ".help" for usage hints.
+sqlite> .tables
+sqlite> .schema
+sqlite> .headers on
+sqlite> .mode column
+sqlite> SELECT * FROM users LIMIT 10;
+Parse error: no such table: users
+sqlite> .quit
+(.venv) PS C:\Users\Anupriya\OneDrive\my_project_extracts\DS (1)> 
+(.venv) PS C:\Users\Anupriya\OneDrive\my_project_extracts\DS (1)> cd ".\DS\DS"
+>> sqlite3 .\digital_society.db
+SQLite version 3.50.4 2025-07-30 19:33:53
+Enter ".help" for usage hints.
+sqlite> .tables
+activities                     maintenance_request_histories
+activity_participants          maintenance_requests         
+audit_logs                     memos                        
+authorized_people              notices                      
+bills                          notifications                
+buildings                      participants                 
+complaint_categories           payments                     
+complaint_messages             residents                    
+complaints                     roles                        
+emergency_alerts               settings                     
+emergency_contacts             survey_responses             
+events                         surveys                      
+family_members                 users                        
+feedback                       visitor_logs                 
+flats                          visitors                     
+sqlite> .schema
+CREATE TABLE roles (
+        id INTEGER NOT NULL, 
+        name VARCHAR(80) NOT NULL, 
+        description VARCHAR(255), 
+        PRIMARY KEY (id), 
+        UNIQUE (name)
+);
+CREATE TABLE buildings (
+        id INTEGER NOT NULL, 
+        name VARCHAR(120) NOT NULL, 
+        address VARCHAR(255), 
+        created_at DATETIME, 
+        PRIMARY KEY (id)
+);
+CREATE TABLE complaint_categories (
+        id INTEGER NOT NULL, 
+        name VARCHAR(80) NOT NULL, 
+        PRIMARY KEY (id), 
+        UNIQUE (name)
+);
+CREATE TABLE surveys (
+        id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        description TEXT, 
+        is_active BOOLEAN, 
+        created_at DATETIME, 
+        PRIMARY KEY (id)
+);
+CREATE TABLE emergency_alerts (
+        id INTEGER NOT NULL, 
+        alert_type VARCHAR(50), 
+        message TEXT NOT NULL, 
+        severity VARCHAR(20), 
+        created_at DATETIME, 
+        PRIMARY KEY (id)
+);
+CREATE TABLE settings (
+        id INTEGER NOT NULL, 
+        "key" VARCHAR(80) NOT NULL, 
+        value VARCHAR(255) NOT NULL, 
+        PRIMARY KEY (id), 
+        UNIQUE ("key")
+);
+CREATE TABLE users (
+        id INTEGER NOT NULL, 
+        username VARCHAR(80) NOT NULL, 
+        email VARCHAR(120) NOT NULL, 
+        password_hash VARCHAR(255) NOT NULL, 
+        first_name VARCHAR(80), 
+        last_name VARCHAR(80), 
+        phone VARCHAR(20), 
+        role_id INTEGER NOT NULL, 
+        is_verified BOOLEAN, 
+        is_approved BOOLEAN, 
+        otp_code VARCHAR(10), 
+        remember_me BOOLEAN, 
+        last_login DATETIME, 
+        created_at DATETIME, is_active BOOLEAN NOT NULL DEFAULT 1, 
+        PRIMARY KEY (id), 
+        UNIQUE (username), 
+        UNIQUE (email), 
+        FOREIGN KEY(role_id) REFERENCES roles (id)
+);
+CREATE TABLE flats (
+        id INTEGER NOT NULL, 
+        number VARCHAR(20) NOT NULL, 
+        flat_type VARCHAR(50), 
+        building_id INTEGER NOT NULL, 
+        occupied BOOLEAN, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(building_id) REFERENCES buildings (id)
+);
+CREATE TABLE residents (
+        id INTEGER NOT NULL, 
+        user_id INTEGER NOT NULL, 
+        flat_id INTEGER, 
+        building_id INTEGER, 
+        emergency_contact VARCHAR(20), 
+        avatar_url VARCHAR(255), 
+        status VARCHAR(20), 
+        approval_status VARCHAR(20), 
+        approved_by_id INTEGER, 
+        approval_date DATETIME, 
+        created_at DATETIME, resident_type VARCHAR(20), 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(user_id) REFERENCES users (id), 
+        FOREIGN KEY(flat_id) REFERENCES flats (id), 
+        FOREIGN KEY(building_id) REFERENCES buildings (id), 
+        FOREIGN KEY(approved_by_id) REFERENCES users (id)
+);
+CREATE TABLE events (
+        id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        description TEXT, 
+        start_date DATETIME NOT NULL, 
+        end_date DATETIME NOT NULL, 
+        location VARCHAR(120), 
+        created_by_id INTEGER NOT NULL, 
+        max_capacity INTEGER, 
+        event_type VARCHAR(50), 
+        status VARCHAR(20), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(created_by_id) REFERENCES users (id)
+);
+CREATE TABLE notices (
+        id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        content TEXT NOT NULL, 
+        notice_type VARCHAR(50), 
+        is_pinned BOOLEAN, 
+        priority VARCHAR(20), 
+        created_by_id INTEGER NOT NULL, 
+        expires_at DATETIME, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(created_by_id) REFERENCES users (id)
+);
+CREATE TABLE notifications (
+        id INTEGER NOT NULL, 
+        user_id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        message TEXT NOT NULL, 
+        is_read BOOLEAN, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(user_id) REFERENCES users (id)
+);
+CREATE TABLE audit_logs (
+        id INTEGER NOT NULL, 
+        user_id INTEGER, 
+        action VARCHAR(120) NOT NULL, 
+        details TEXT, 
+        created_at DATETIME, owner_name VARCHAR(120), resident_name VARCHAR(120), flat_number VARCHAR(40), description TEXT, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(user_id) REFERENCES users (id)
+);
+CREATE TABLE visitors (
+        id INTEGER NOT NULL, 
+        full_name VARCHAR(120) NOT NULL, 
+        phone VARCHAR(20), 
+        vehicle_number VARCHAR(20), 
+        purpose VARCHAR(120), 
+        resident_id INTEGER, 
+        status VARCHAR(20), 
+        check_in DATETIME, 
+        check_out DATETIME, 
+        created_at DATETIME, flat_number VARCHAR(40), entry_time DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE maintenance_requests (
+        id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        description TEXT NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        staff_id INTEGER, 
+        priority VARCHAR(20), 
+        status VARCHAR(20), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id), 
+        FOREIGN KEY(staff_id) REFERENCES users (id)
+);
+CREATE TABLE bills (
+        id INTEGER NOT NULL, 
+        bill_type VARCHAR(50) NOT NULL, 
+        description VARCHAR(255), 
+        amount FLOAT NOT NULL, 
+        due_date DATETIME NOT NULL, 
+        status VARCHAR(20), 
+        resident_id INTEGER NOT NULL, 
+        flat_id INTEGER, 
+        created_at DATETIME, resident_name VARCHAR(120), flat_number VARCHAR(40), payment_status VARCHAR(20) DEFAULT 'Pending', payment_date DATE, billing_period VARCHAR(7), is_automatic BOOLEAN NOT NULL DEFAULT 0, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id), 
+        FOREIGN KEY(flat_id) REFERENCES flats (id)
+);
+CREATE TABLE participants (
+        id INTEGER NOT NULL, 
+        event_id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        status VARCHAR(20), 
+        created_at DATETIME, cancel_reason VARCHAR(255), cancelled_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(event_id) REFERENCES events (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE feedback (
+        id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        rating INTEGER NOT NULL, 
+        comment TEXT, 
+        category VARCHAR(50), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE survey_responses (
+        id INTEGER NOT NULL, 
+        survey_id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        response TEXT NOT NULL, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(survey_id) REFERENCES surveys (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE visitor_logs (
+        id INTEGER NOT NULL, 
+        visitor_id INTEGER NOT NULL, 
+        action VARCHAR(50) NOT NULL, 
+        note VARCHAR(255), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(visitor_id) REFERENCES visitors (id)
+);
+CREATE TABLE payments (
+        id INTEGER NOT NULL, 
+        bill_id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        amount FLOAT NOT NULL, 
+        payment_method VARCHAR(30), 
+        status VARCHAR(20), 
+        transaction_id VARCHAR(80), 
+        created_at DATETIME, razorpay_order_id VARCHAR(80), razorpay_payment_id VARCHAR(80), 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(bill_id) REFERENCES bills (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE memos (
+        id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        content TEXT NOT NULL, 
+        status VARCHAR(20), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE maintenance_request_histories (
+        id INTEGER NOT NULL, 
+        maintenance_request_id INTEGER NOT NULL, 
+        updated_by_id INTEGER, 
+        status VARCHAR(30) NOT NULL, 
+        note TEXT, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(maintenance_request_id) REFERENCES maintenance_requests (id), 
+        FOREIGN KEY(updated_by_id) REFERENCES users (id)
+);
+CREATE TABLE activities (
+        id INTEGER NOT NULL, 
+        title VARCHAR(120) NOT NULL, 
+        description TEXT, 
+        max_participants INTEGER, 
+        status VARCHAR(20), 
+        created_by_id INTEGER NOT NULL, 
+        created_at DATETIME, event_id INTEGER, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(created_by_id) REFERENCES users (id)
+);
+CREATE TABLE activity_participants (
+        id INTEGER NOT NULL, 
+        activity_id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        status VARCHAR(20), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(activity_id) REFERENCES activities (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE complaints (
+                            id INTEGER NOT NULL,
+                            title VARCHAR(120) NOT NULL,
+                            description TEXT NOT NULL,
+                            category_id INTEGER,
+                            resident_id INTEGER NOT NULL,
+                            assigned_to_id INTEGER,
+                            status VARCHAR(20),
+                            priority VARCHAR(20),
+                            created_at DATETIME,
+                            PRIMARY KEY (id),
+                            FOREIGN KEY(category_id) REFERENCES complaint_categories(id),
+                            FOREIGN KEY(resident_id) REFERENCES residents(id),
+                            FOREIGN KEY(assigned_to_id) REFERENCES users(id)
+                        );
+CREATE TABLE complaint_messages (
+        id INTEGER NOT NULL, 
+        complaint_id INTEGER NOT NULL, 
+        sender_id INTEGER NOT NULL, 
+        message TEXT NOT NULL, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(complaint_id) REFERENCES complaints (id), 
+        FOREIGN KEY(sender_id) REFERENCES users (id)
+);
+CREATE TABLE family_members (
+        id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        name VARCHAR(120) NOT NULL, 
+        relationship VARCHAR(50) NOT NULL, 
+        phone VARCHAR(20), 
+        email VARCHAR(120), 
+        is_dependent BOOLEAN NOT NULL, 
+        notes VARCHAR(255), 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE emergency_contacts (
+        id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        name VARCHAR(120) NOT NULL, 
+        relationship VARCHAR(50) NOT NULL, 
+        phone VARCHAR(20) NOT NULL, 
+        priority INTEGER NOT NULL, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+CREATE TABLE authorized_people (
+        id INTEGER NOT NULL, 
+        resident_id INTEGER NOT NULL, 
+        name VARCHAR(120) NOT NULL, 
+        relationship VARCHAR(50), 
+        phone VARCHAR(20), 
+        vehicle_number VARCHAR(20), 
+        valid_from DATE, 
+        valid_until DATE, 
+        status VARCHAR(20) NOT NULL, 
+        created_at DATETIME, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(resident_id) REFERENCES residents (id)
+);
+sqlite> .headers on
+sqlite> .mode box
+sqlite> SELECT * FROM users LIMIT 5;

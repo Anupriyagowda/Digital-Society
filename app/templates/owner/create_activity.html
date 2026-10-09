@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Create Activity{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Create Activity</h4>
+            <p class="text-muted small mb-0">Create an activity like Singing, Dancing, Anchoring with a participant limit.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('owner.activities') }}">Back to activities</a>
+    </div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input class="form-control" name="title" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4"></textarea>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Participant Limit</label>
+                <input class="form-control" type="number" name="max_participants" value="20" min="1" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option value="Active">Active</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-primary">Create Activity</button>
+    </form>
+</div>
+{% endblock %}

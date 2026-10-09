@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Submit Feedback{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="card p-4">
+    <h4>Share Feedback</h4>
+    <form method="post" class="row g-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="col-md-6">
+            <label for="category" class="form-label">Category</label>
+            <input id="category" class="form-control" name="category" placeholder="Category" required>
+        </div>
+        <div class="col-md-6">
+            <label for="rating" class="form-label">Rating</label>
+            <select id="rating" class="form-select" name="rating" required>
+                <option value="" selected disabled>Select a rating</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Very Good</option>
+                <option value="3">3 - Good</option>
+                <option value="2">2 - Fair</option>
+                <option value="1">1 - Poor</option>
+            </select>
+        </div>
+        <div class="col-12"><textarea class="form-control" name="comment" placeholder="Your comments" rows="4"></textarea></div>
+        <div class="col-12"><button class="btn btn-primary">Submit</button></div>
+    </form>
+</div>
+{% endblock %}

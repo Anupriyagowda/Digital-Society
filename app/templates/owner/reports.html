@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="mb-4">
+    <div class="report-page-header d-flex justify-content-between align-items-center gap-3">
+        <div><h3 class="fw-bold mb-1">Reports & Analytics</h3><p class="text-muted small mb-0">Track society trends and performance metrics.</p></div>
+        <a class="btn btn-outline-primary background-image-action-button" target="_blank" href="{{ url_for('owner.download_reports', preview=1) }}"><i class="bi bi-eye me-2"></i>Preview Report</a>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+        <div class="glass-card p-3 h-100"><div class="text-muted small">Residents</div><div class="fw-bold fs-4">{{ society_snapshot.total_residents }}</div></div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <a class="glass-card p-3 h-100 d-block text-decoration-none" href="{{ url_for('owner.report_bills', status='all') }}"><div class="text-muted small">Total bills</div><div class="fw-bold fs-4">{{ society_snapshot.total_bills }}</div></a>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <a class="glass-card p-3 h-100 d-block text-decoration-none" href="{{ url_for('owner.report_bills', status='pending') }}"><div class="text-muted small">Pending bills</div><div class="fw-bold fs-4">{{ society_snapshot.pending_bills }}</div></a>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <a class="glass-card p-3 h-100 d-block text-decoration-none" href="{{ url_for('owner.report_bills', status='paid') }}"><div class="text-muted small">Collected</div><div class="fw-bold fs-4">₹{{ "{:,.0f}".format(society_snapshot.collected_revenue) }}</div></a>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="glass-card p-3 h-100"><div class="text-muted small">Visitors</div><div class="fw-bold fs-4">{{ society_snapshot.total_visitors }}</div></div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="glass-card p-3 h-100"><div class="text-muted small">Upcoming events</div><div class="fw-bold fs-4">{{ society_snapshot.upcoming_events }}</div></div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Complaint trends</h5>
+            <ul class="list-group list-group-flush">
+                {% for row in complaints_by_month %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ row[0] }}</span>
+                    <span class="fw-semibold">{{ row[1] }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Revenue trend</h5>
+            <ul class="list-group list-group-flush">
+                {% for row in revenue_by_month %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ row[0] }}</span>
+                    <span class="fw-semibold">₹{{ "{:,.0f}".format(row[1] or 0) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-3">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Top complaint categories</h5>
+            <ol class="ps-3 mb-0">
+                {% for category, count in top_categories %}
+                <li class="mb-2">{{ category }} <span class="text-muted">({{ count }})</span></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Resident sentiment</h5>
+            <div class="display-6 fw-bold mb-3">{{ avg_rating }}/5</div>
+            <p class="text-muted small">Average resident rating based on feedback.</p>
+            {% if recent_feedback %}
+            <div class="mt-4">
+                <h6 class="fw-semibold mb-3">Recent feedback</h6>
+                <ul class="list-group list-group-flush">
+                    {% for item in recent_feedback %}
+                    <li class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold">{{ item.category or 'General' }}</span>
+                            <span class="badge badge-soft">{{ item.rating }}/5</span>
+                        </div>
+                        {% if item.comment %}
+                        <p class="mb-0 text-muted small">{{ item.comment }}</p>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">No resident feedback submitted yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

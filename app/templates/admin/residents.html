@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Residents{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4 mb-4">
+    <div class="page-header mb-3">
+        <div>
+            <h5 class="fw-bold mb-1">Automatic billing schedule</h5>
+            <p class="text-muted mb-0 small">Choose when the next monthly bill is generated and when it is due.</p>
+        </div>
+        <span class="badge badge-soft">Active schedule</span>
+    </div>
+    <form method="post" action="{{ url_for('admin.residents') }}" class="row g-3 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3">
+            <label class="form-label small" for="generation_day">Generation day</label>
+            <input class="form-control" id="generation_day" name="generation_day" type="number" min="1" max="28" value="{{ billing_generation_day }}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small" for="generation_time">Generation time</label>
+            <input class="form-control" id="generation_time" name="generation_time" type="time" value="{{ billing_generation_time }}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small" for="due_day">Due day next month</label>
+            <input class="form-control" id="due_day" name="due_day" type="number" min="1" max="28" value="{{ billing_due_day }}" required>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-calendar-check me-1"></i>Save schedule</button>
+        </div>
+    </form>
+</div>
+<div class="glass-card p-4">
+    <div class="page-header mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Resident directory</h4>
+            <p class="text-muted mb-0 small">View residents and their current status at a glance.</p>
+        </div>
+        <button class="btn btn-primary btn-sm">+ Add Resident</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="glass-card p-3 metric-card">
+                <div class="small text-muted">Active residents</div>
+                <div class="fw-bold fs-5">128</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-3 metric-card">
+                <div class="small text-muted">Pending approvals</div>
+                <div class="fw-bold fs-5">6</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-3 metric-card">
+                <div class="small text-muted">Guest access</div>
+                <div class="fw-bold fs-5">24</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for resident in residents %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-3">
+                        {% if resident.user.avatar_url %}
+                        <img src="{{ url_for('static', filename=resident.user.avatar_url) }}" class="avatar-pill object-fit-cover" alt="{{ resident.user.first_name or resident.user.username }} profile picture">
+                        {% else %}
+                        <div class="avatar-pill">{{ (resident.user.first_name or resident.user.username)[0] }}{% if resident.user.last_name %}{{ resident.user.last_name[0] }}{% endif %}</div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-semibold">{{ resident.user.first_name }}{% if resident.user.last_name %} {{ resident.user.last_name }}{% endif %}</div>
+                            <div class="small text-muted">{{ resident.user.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge badge-soft">{{ resident.status }}</span></td>
+                <td>{{ resident.user.phone or '—' }}</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.resident_household', resident_id=resident.id) }}">Household</a>
+                    {% if current_user.role and current_user.role.name == 'Owner' %}
+                        {% if not resident.user.is_approved %}
+                        <form method="post" action="{{ url_for('admin.approve_resident', resident_id=resident.id) }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin.reject_resident', resident_id=resident.id) }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                        </form>
+                        {% else %}
+                        <span class="small text-muted">Approved</span>
+                        <form method="post" action="{{ url_for('admin.reject_resident', resident_id=resident.id) }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Unapprove</button>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                        <span class="small text-muted">{{ 'Approved' if resident.user.is_approved else 'Pending' }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

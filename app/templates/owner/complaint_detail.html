@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Complaint Detail{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.complaints') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">{{ complaint.title }}</h4>
+            <p class="text-muted small mb-0">Submitted: {{ complaint.created_at.strftime('%d %b %Y %H:%M') }}</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('owner.complaints') }}">Back</a>
+    </div>
+
+    <div class="mb-3">
+        <strong>Status:</strong> <span class="badge bg-{{ 'warning' if complaint.status == 'Pending' else 'success' if complaint.status == 'Resolved' else 'info' }}">{{ complaint.status }}</span>
+    </div>
+    <div class="mb-3">
+        <strong>Priority:</strong> {{ complaint.priority }}
+    </div>
+    <div class="mb-3">
+        <strong>Category:</strong> {{ complaint.category.name if complaint.category else 'Uncategorized' }}
+    </div>
+    <div class="mb-3">
+        <strong>Resident:</strong>
+        {% if complaint.resident and complaint.resident.user %}
+            {{ complaint.resident.user.first_name }} {% if complaint.resident.user.last_name %}{{ complaint.resident.user.last_name }}{% endif %} ({{ complaint.resident.user.email }})
+        {% else %}
+            Unknown resident
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <strong>Description:</strong>
+        <p>{{ complaint.description }}</p>
+    </div>
+    <div class="mb-4">
+        <strong>Assigned To:</strong>
+        <p>{% if complaint.assigned_to %}{{ complaint.assigned_to.first_name }}{% if complaint.assigned_to.last_name %} {{ complaint.assigned_to.last_name }}{% endif %}{% else %}Unassigned{% endif %}</p>
+    </div>
+
+    <div class="mb-4">
+        <h5>Conversation</h5>
+        {% for message in complaint.messages %}
+        <div class="border rounded p-3 mb-2">
+            <strong>{{ message.sender.first_name or message.sender.username }}</strong>
+            <small class="text-muted">{{ message.created_at.strftime('%d %b %Y %H:%M') }}</small>
+            <p class="mb-0 mt-1">{{ message.message }}</p>
+        </div>
+        {% else %}<p class="text-muted">No replies yet.</p>{% endfor %}
+        <form method="post" action="{{ url_for('owner.reply_to_complaint', complaint_id=complaint.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <textarea class="form-control mb-2" name="message" rows="3" placeholder="Write a reply" required></textarea>
+            <button class="btn btn-primary">Send Reply</button>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="glass-card p-3">
+                <h6 class="fw-semibold">Update Status</h6>
+                <form method="post" action="{{ url_for('owner.update_complaint_status', complaint_id=complaint.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="mb-3">
+                        <select class="form-select" name="action">
+                            <option value="pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="processing" {% if complaint.status == 'Processing' %}selected{% endif %}>Processing</option>
+                            <option value="assigned" {% if complaint.status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                            <option value="resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass-card p-3">
+                <h6 class="fw-semibold">Assign to Staff</h6>
+                <form method="post" action="{{ url_for('owner.assign_complaint', complaint_id=complaint.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="mb-3">
+                        <select class="form-select" name="staff_id">
+                            <option value="">Select staff</option>
+                            {% for staff_member in staff_members %}
+                            <option value="{{ staff_member.id }}" {% if complaint.assigned_to_id == staff_member.id %}selected{% endif %}>{{ staff_member.first_name or staff_member.username }} {{ staff_member.last_name }} ({{ staff_member.role.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-outline-primary">Assign Complaint</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

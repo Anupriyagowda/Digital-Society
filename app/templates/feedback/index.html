@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Resident feedback</h4>
+        {% if current_user.role and current_user.role.name == 'Resident' %}
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('feedback.submit_feedback') }}">Submit feedback</a>
+        {% endif %}
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for feedback in feedbacks %}
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    {% set resident_user = feedback.resident.user if feedback.resident and feedback.resident.user else none %}
+                    {% if resident_user %}
+                    <div class="small text-muted mb-1">From: {{ resident_user.first_name or resident_user.username }} {{ resident_user.last_name or '' }}</div>
+                    {% endif %}
+                    <span class="fw-semibold">{{ feedback.category or 'General' }}</span>
+                    {% if feedback.comment %}
+                    <div class="text-muted mt-1">{{ feedback.comment }}</div>
+                    {% endif %}
+                </div>
+                <span class="badge badge-soft">{{ feedback.rating }}/5</span>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Scan Digital Pass{% endblock %}
+{% block content %}
+<div class="glass-card p-4 mx-auto" style="max-width: 700px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><h3 class="fw-bold mb-1">Scan Digital Pass</h3><p class="text-muted mb-0">Use the laptop camera to verify a resident.</p></div>
+        <a class="btn btn-sm back-btn" href="{{ url_for('security.index') }}" data-fallback-url="{{ url_for('security.index') }}"><i class="bi bi-arrow-left me-2"></i>Back</a>
+    </div>
+    <div id="reader" class="border rounded overflow-hidden"></div>
+    <button id="start-camera" class="btn btn-primary mt-3" type="button"><i class="bi bi-camera me-2"></i>Start Camera Scanner</button>
+    <div id="camera-status" class="small text-muted mt-2">Camera scanner is ready to start.</div>
+    <div class="mt-3">
+        <label class="form-label" for="qr-file">Or upload a screenshot of the QR code</label>
+        <input id="qr-file" class="form-control" type="file" accept="image/*">
+    </div>
+    <div id="scan-error" class="alert alert-warning mt-3 d-none"></div>
+</div>
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const errorBox = document.getElementById('scan-error');
+    const fileInput = document.getElementById('qr-file');
+    const startButton = document.getElementById('start-camera');
+    const cameraStatus = document.getElementById('camera-status');
+    const passUrlTemplate = new URL({{ url_for('security.verify_digital_pass', token='__PASS_TOKEN__')|tojson }}, window.location.origin);
+    const passPathPrefix = passUrlTemplate.pathname.replace('__PASS_TOKEN__', '');
+    let scanner;
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.classList.remove('d-none');
+        cameraStatus.textContent = 'Camera scanner stopped.';
+    }
+    function openResult(decodedText) {
+        let qrUrl;
+        try {
+            qrUrl = new URL(decodedText, window.location.origin);
+        } catch (error) {
+            showError('This QR code is not a Digital Society pass from this application.');
+            return;
+        }
+        const token = qrUrl.pathname.startsWith(passPathPrefix)
+            ? qrUrl.pathname.slice(passPathPrefix.length)
+            : '';
+        if (!['http:', 'https:'].includes(qrUrl.protocol) || !token || token.includes('/')) {
+            showError('This QR code is not a Digital Society pass from this application.');
+            return;
+        }
+        window.location.href = window.location.origin + passPathPrefix + token;
+    }
+    function startScanner() {
+        errorBox.classList.add('d-none');
+        startButton.disabled = true;
+        cameraStatus.textContent = 'Requesting camera permission...';
+        if (typeof Html5Qrcode === 'undefined') {
+            showError('The scanner library could not load. Check the laptop internet connection, then reload.');
+            startButton.disabled = false;
+            return;
+        }
+        scanner = new Html5Qrcode('reader');
+        Html5Qrcode.getCameras().then(function (cameras) {
+            if (!cameras.length) {
+                showError('No camera was found. Connect a webcam or upload a QR-code screenshot below.');
+                startButton.disabled = false;
+                return;
+            }
+            cameraStatus.textContent = 'Point the camera at the resident QR code.';
+            return scanner.start(cameras[0].id, { fps: 10, qrbox: { width: 250, height: 250 } }, function (decodedText) {
+                scanner.stop().then(function () { openResult(decodedText); });
+            }, function () {});
+        }).catch(function (error) {
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                showError('Camera access requires HTTPS when using a laptop IP address. Open this page with http://localhost:5000, use HTTPS, or upload a QR screenshot below.');
+            } else if (error && error.name === 'NotAllowedError') {
+                showError('Camera permission was denied. Click the camera icon beside the address bar, choose Allow, and reload this page.');
+            } else {
+                showError('The camera could not start. Close other apps using the webcam, check Windows camera permissions, or upload a QR screenshot below.');
+            }
+            startButton.disabled = false;
+        });
+    }
+    fileInput.addEventListener('change', function () {
+        if (!fileInput.files.length || typeof Html5Qrcode === 'undefined') return;
+        const fileScanner = new Html5Qrcode('reader');
+        fileScanner.scanFile(fileInput.files[0], true).then(openResult).catch(function () {
+            showError('No readable QR code was found in that image.');
+        });
+    });
+    startButton.addEventListener('click', startScanner);
+});
+</script>
+{% endblock %}

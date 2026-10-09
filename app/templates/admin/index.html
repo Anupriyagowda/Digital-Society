@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Admin Overview{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="hero-card p-4 p-lg-5">
+            <div class="d-flex justify-content-between flex-wrap gap-3 align-items-start">
+                <div>
+                    <p class="text-uppercase small fw-semibold mb-2 opacity-75">Society operations</p>
+                    <h3 class="fw-bold mb-3">Administration command center</h3>
+                    <p class="mb-4 opacity-90">Monitor requests, oversee residents, and keep the community informed from one premium workspace.</p>
+                </div>
+                <span class="admin-chip">Live</span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-light" href="{{ url_for('admin.residents') }}">Manage Residents</a>
+                <a class="btn btn-outline-light" href="{{ url_for('admin.notices') }}">Post Notices</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Today at a glance</h6>
+                <span class="admin-chip">Updated now</span>
+            </div>
+            <ul class="list-unstyled small text-muted mb-0 mt-3">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>4 pending complaints</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>2 maintenance requests</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>1 upcoming event</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1 stat-grid">
+    <div class="col-md-3">
+        <div class="glass-card p-4 metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Residents</div>
+                    <div class="fw-bold fs-4">128</div>
+                </div>
+                <i class="bi bi-people-fill fs-3 text-primary"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Complaints</div>
+                    <div class="fw-bold fs-4">14</div>
+                </div>
+                <i class="bi bi-exclamation-circle-fill fs-3 text-warning"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Revenue</div>
+                    <div class="fw-bold fs-4">₹84K</div>
+                </div>
+                <i class="bi bi-cash-stack fs-3 text-success"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 metric-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Visitors</div>
+                    <div class="fw-bold fs-4">26</div>
+                </div>
+                <i class="bi bi-person-badge fs-3 text-secondary"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Quick actions</h5>
+                <span class="badge badge-soft">Fast</span>
+            </div>
+            <div class="d-grid gap-2">
+                <a class="btn btn-outline-primary" href="{{ url_for('admin.residents') }}">View residents</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('admin.notices') }}">Create notice</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('admin.complaints') }}">Inspect complaints</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('admin.amenities') }}"><i class="bi bi-calendar2-check me-2"></i>Manage amenity bookings</a>
+                <a class="btn btn-outline-danger" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Send emergency alert</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('meetings.index') }}"><i class="bi bi-camera-video me-2"></i>Manage society meetings</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('marketplace.index') }}"><i class="bi bi-shop me-2"></i>Review marketplace</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-3">Community health</h5>
+            <div class="progress mb-3" style="height: 10px;"><div class="progress-bar bg-primary" style="width: 82%"></div></div>
+            <p class="text-muted small mb-0">Resident satisfaction remains strong with active engagement across service modules.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold mb-3">Recent activity</h5>
+            <div class="timeline-item">New resident registration completed</div>
+            <div class="timeline-item">Maintenance request assigned to staff</div>
+            <div class="timeline-item">Emergency notice published to the community</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Login theme studio</h5>
+                    <p class="text-muted mb-0 small">Upload a custom background image to make the login and registration screens feel premium.</p>
+                </div>
+                <span class="badge badge-soft">Custom</span>
+            </div>
+            <form action="{{ url_for('admin.update_login_background') }}" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="col-md-6">
+                    <label class="form-label">Upload login background</label>
+                    <input class="form-control" type="file" name="background_image" accept="image/*" required>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100" type="submit">Save image</button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-secondary w-100" type="submit" name="action" value="reset">Reset default</button>
+                </div>
+            </form>
+            {% if background_image %}
+            <div class="mt-4">
+                <div class="small text-muted mb-2">Current preview</div>
+                <img src="{{ background_image }}" class="img-fluid rounded-4 border" style="max-height: 220px; object-fit: cover;">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Resident Memos{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('security.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4 p-lg-5 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+        <div>
+            <div class="badge bg-info-subtle text-info fw-semibold mb-2">Follow-up</div>
+            <h3 class="fw-bold mb-2">Resident Memos</h3>
+            <p class="text-muted mb-0">Track resident notices and follow up on pending items.</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4 security-section-card">
+    {% if memos %}
+    <div class="d-flex flex-column gap-2">
+        {% for memo in memos %}
+        <div class="security-list-item">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="fw-semibold">{{ memo.title }}</div>
+                    <div class="small text-muted">{{ memo.content }}</div>
+                    <div class="small text-muted">From: {{ memo.resident.user.first_name if memo.resident and memo.resident.user else 'Unknown resident' }} {{ memo.resident.user.last_name if memo.resident and memo.resident.user else '' }} · Flat {{ memo.resident.flat.number if memo.resident and memo.resident.flat else '—' }}</div>
+                </div>
+                <div class="text-end">
+                    <div class="badge badge-soft mb-2">{{ memo.status }}</div>
+                    {% if memo.status != 'Followed' %}
+                    <form method="post" action="{{ url_for('security.follow_memo', memo_id=memo.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button class="btn btn-sm btn-outline-secondary">Follow</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No memos from residents yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

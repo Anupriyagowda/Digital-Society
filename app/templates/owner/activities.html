@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Activities{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Activity Management</h3>
+        <p class="text-muted small mb-0">Create and manage society activities for residents.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('owner.create_activity') }}">Create Activity</a>
+</div>
+<div class="row g-3">
+    {% for activity in activities.items %}
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h5 class="fw-semibold mb-1">{{ activity.title }}</h5>
+                    <div class="text-muted small">Limit: {{ activity.max_participants }} participants</div>
+                </div>
+                <span class="badge bg-{{ 'success' if activity.status == 'Active' else 'secondary' }}">{{ activity.status }}</span>
+            </div>
+            <p class="mb-3 text-muted">{{ activity.description or 'No description provided.' }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">Created: {{ activity.created_at.strftime('%d %b, %Y') }}</div>
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('owner.activity_details', activity_id=activity.id) }}">Details</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="glass-card p-4 text-center text-muted">No activities created yet.</div>
+    </div>
+    {% endfor %}
+</div>
+<nav class="mt-3">
+    {% if activities.has_prev %}
+    <a class="btn btn-outline-secondary btn-sm me-2" href="{{ url_for('owner.activities', page=activities.prev_num) }}">Previous</a>
+    {% endif %}
+    {% if activities.has_next %}
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('owner.activities', page=activities.next_num) }}">Next</a>
+    {% endif %}
+</nav>
+{% endblock %}

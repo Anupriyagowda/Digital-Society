@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="row g-4">
+    <div class="col-md-3"><div class="glass-card p-4 metric-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted">Residents</h6><h2 class="fw-bold">{{ resident_count }}</h2></div><i class="bi bi-people-fill fs-3 text-primary"></i></div></div></div>
+    <div class="col-md-3"><div class="glass-card p-4 metric-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted">Pending Complaints</h6><h2 class="fw-bold">{{ pending_complaints }}</h2></div><i class="bi bi-exclamation-circle-fill fs-3 text-warning"></i></div></div></div>
+    <div class="col-md-3"><div class="glass-card p-4 metric-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted">Resolved</h6><h2 class="fw-bold">{{ solved_complaints }}</h2></div><i class="bi bi-check2-circle-fill fs-3 text-success"></i></div></div></div>
+    <div class="col-md-3"><div class="glass-card p-4 metric-card"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted">Visitors</h6><h2 class="fw-bold">{{ today_visitors }}</h2></div><i class="bi bi-person-badge fs-3 text-secondary"></i></div></div></div>
+</div>
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0">Notices</h5><span class="badge badge-soft">Updated</span></div>
+            <ul class="list-group list-group-flush">
+                {% for notice in notices %}
+                <li class="list-group-item"><div class="d-flex justify-content-between"><span>{{ notice.title }}</span><small class="text-muted">{{ notice.notice_type }}</small></div></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0">Upcoming Events</h5><span class="badge badge-soft">Calendar</span></div>
+            <ul class="list-group list-group-flush">
+                {% for event in events %}
+                <li class="list-group-item"><div class="d-flex justify-content-between"><span>{{ event.title }}</span><small class="text-muted">{{ event.start_date.strftime('%Y-%m-%d') }}</small></div></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

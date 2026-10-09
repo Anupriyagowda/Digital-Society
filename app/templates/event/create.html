@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Create Event{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="page-header mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Create Event</h4>
+            <p class="text-muted mb-0 small">Society Administrators can post events for the society.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ url_for('event.index') }}">Back</a>
+    </div>
+
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input name="title" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control"></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Start date (YYYY-MM-DD)</label>
+                <input name="start_date" class="form-control" placeholder="2026-01-01" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">End date (YYYY-MM-DD)</label>
+                <input name="end_date" class="form-control" placeholder="2026-01-02" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Location</label>
+            <input name="location" class="form-control" />
+        </div>
+        <button class="btn btn-primary">Create</button>
+    </form>
+</div>
+{% endblock %}

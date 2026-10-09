@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Society</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20261002-4') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}"{% block body_style %}{% endblock %}>
+    <div class="app-shell container-fluid p-0">
+        <div class="row g-0">
+            {% if current_user.is_authenticated and request.endpoint != 'main.index' %}
+            {% set role_name = current_user.role.name if current_user.role else '' %}
+            {% set is_admin = role_name in ['Super Admin', 'Society Admin'] %}
+            {% set fallback_dashboard = url_for('admin.dashboard') if role_name in ['Super Admin', 'Society Admin'] else url_for('owner.dashboard') if role_name == 'Owner' else url_for('security.index') if role_name == 'Security Guard' else url_for('maintenance.index') if role_name == 'Maintenance Staff' else url_for('main.dashboard') %}
+            <nav class="col-md-3 col-lg-2 sidebar p-3 d-flex flex-column">
+                <div class="brand mb-4">
+                    <h4 class="mb-1">Digital Society</h4>
+                    <p class="mb-0 small opacity-75">Modern community management</p>
+                </div>
+                <ul class="nav flex-column gap-1">
+                    {% if is_admin %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.residents' %}active{% endif %}" href="{{ url_for('admin.residents') }}"><i class="bi bi-people me-2"></i> Residents</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.notices' %}active{% endif %}" href="{{ url_for('admin.notices') }}"><i class="bi bi-megaphone me-2"></i> Notices</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('emergency.') %}active{% endif %}" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i> Emergency Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.complaints' %}active{% endif %}" href="{{ url_for('admin.complaints') }}"><i class="bi bi-exclamation-circle me-2"></i> Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.amenities' %}active{% endif %}" href="{{ url_for('admin.amenities') }}"><i class="bi bi-calendar2-check me-2"></i> Amenities</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'feedback.index' %}active{% endif %}" href="{{ url_for('feedback.index') }}"><i class="bi bi-chat-dots me-2"></i> Feedback</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-palette me-2"></i> Customization</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.account' %}active{% endif %}" href="{{ url_for('main.account') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                    {% elif role_name == 'Owner' %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'owner.dashboard' %}active{% endif %}" href="{{ url_for('owner.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.resident' in request.endpoint %}active{% endif %}" href="{{ url_for('owner.residents') }}"><i class="bi bi-people me-2"></i> Residents</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.notice' in request.endpoint or request.endpoint == 'owner.notices' %}active{% endif %}" href="{{ url_for('owner.notices') }}"><i class="bi bi-megaphone me-2"></i> Notices</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('emergency.') %}active{% endif %}" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i> Emergency Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.event' in request.endpoint or request.endpoint == 'owner.events' %}active{% endif %}" href="{{ url_for('owner.events') }}"><i class="bi bi-calendar-event me-2"></i> Events</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.amenities' %}active{% endif %}" href="{{ url_for('admin.amenities') }}"><i class="bi bi-calendar2-check me-2"></i> Amenities & Bookings</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.complaint' in request.endpoint or request.endpoint == 'owner.complaints' %}active{% endif %}" href="{{ url_for('owner.complaints') }}"><i class="bi bi-exclamation-circle me-2"></i> Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.maintenance' in request.endpoint or request.endpoint == 'owner.maintenance_requests' %}active{% endif %}" href="{{ url_for('owner.maintenance_requests') }}"><i class="bi bi-tools me-2"></i> Maintenance</a></li>
+                    <li class="nav-item"><a class="nav-link {% if 'owner.staff' in request.endpoint %}active{% endif %}" href="{{ url_for('owner.staff_management') }}"><i class="bi bi-person-badge me-2"></i> Staff</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'owner.reports' %}active{% endif %}" href="{{ url_for('owner.reports') }}"><i class="bi bi-bar-chart me-2"></i> Reports</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'feedback.index' %}active{% endif %}" href="{{ url_for('feedback.index') }}"><i class="bi bi-chat-dots me-2"></i> Feedback</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'owner.account' %}active{% endif %}" href="{{ url_for('owner.account') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                    {% elif role_name == 'Security Guard' %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'security.index' %}active{% endif %}" href="{{ url_for('security.index') }}"><i class="bi bi-shield-shaded me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'security.visitor_management' %}active{% endif %}" href="{{ url_for('security.visitor_management') }}"><i class="bi bi-people me-2"></i> Visitor Management</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'security.visitor_requests' %}active{% endif %}" href="{{ url_for('security.visitor_requests') }}"><i class="bi bi-person-lines-fill me-2"></i> Visitor Requests</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'security.resident_memos' %}active{% endif %}" href="{{ url_for('security.resident_memos') }}"><i class="bi bi-journal-text me-2"></i> Resident Memos</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('emergency.') %}active{% endif %}" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i> Emergency Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.account' %}active{% endif %}" href="{{ url_for('main.account') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                    {% elif role_name == 'Maintenance Staff' %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'maintenance.index' %}active{% endif %}" href="{{ url_for('maintenance.index') }}"><i class="bi bi-tools me-2"></i> Maintenance</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.account' %}active{% endif %}" href="{{ url_for('main.account') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('resident.complaints') }}"><i class="bi bi-exclamation-circle me-2"></i> Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('resident.maintenance') }}"><i class="bi bi-tools me-2"></i> Maintenance</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'resident.amenities' %}active{% endif %}" href="{{ url_for('resident.amenities') }}"><i class="bi bi-calendar2-check me-2"></i> Amenities</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'resident.household' %}active{% endif %}" href="{{ url_for('resident.household') }}"><i class="bi bi-people me-2"></i> Household & Access</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('billing.index') }}"><i class="bi bi-cash-stack me-2"></i> Billing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('feedback.index') }}"><i class="bi bi-chat-dots me-2"></i> Feedback</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('emergency.') %}active{% endif %}" href="{{ url_for('emergency.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i> Emergency Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.account' %}active{% endif %}" href="{{ url_for('main.account') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('meetings.') %}active{% endif %}" href="{{ url_for('meetings.index') }}"><i class="bi bi-camera-video me-2"></i> Society Meetings</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('marketplace.') %}active{% endif %}" href="{{ url_for('marketplace.index') }}"><i class="bi bi-shop me-2"></i> Marketplace</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint and request.endpoint.startswith('notifications.') %}active{% endif %}" href="{{ url_for('notifications.index') }}"><i class="bi bi-bell me-2"></i> Notifications</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}"><i class="bi bi-house-door me-2"></i> Home</a></li>
+                    <li class="nav-item mt-4"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                </ul>
+                <div class="quick-insight mt-auto p-3">
+                    <p class="small mb-2">Quick insight</p>
+                    <div class="fw-semibold">24/7 community operations</div>
+                </div>
+            </nav>
+            <main class="col-md-9 ms-sm-auto col-lg-10 p-4">
+                <div class="topbar p-3 px-4 mb-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column gap-3 w-100">
+                        {% block page_nav %}{% endblock %}
+                        <div>
+                            <h2 class="topbar-page-title fw-bold mb-0">{% block title %}Dashboard{% endblock %}</h2>
+                            <p class="topbar-subtitle mb-0 small">Stay on top of society operations</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 w-100">
+                        <button class="btn btn-sm btn-outline-secondary" id="themeToggle"><i class="bi bi-moon-stars"></i> Theme</button>
+                        <a class="btn btn-sm btn-outline-secondary position-relative" href="{{ url_for('notifications.index') }}" title="Notifications" aria-label="Notifications">
+                            <i class="bi bi-bell"></i>
+                            {% set unread_notifications = current_user.notifications|selectattr('is_read', 'equalto', false)|list|length if current_user.notifications is defined else 0 %}
+                            {% if unread_notifications %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_notifications }}</span>{% endif %}
+                        </a>
+                        <div class="text-end topbar-greeting">
+                            <div class="small topbar-user-name">Welcome, {{ current_user.first_name or current_user.username }}</div>
+                            {% if request.endpoint == 'resident.index' and current_user.role and current_user.role.name == 'Resident' and current_user.resident and current_user.resident.flat %}
+                            <div class="text-muted small">Flat Number: {{ current_user.resident.flat.number }}</div>
+                            <div class="text-muted small">Resident Type: {{ current_user.resident.resident_type or 'Not specified' }}</div>
+                            {% endif %}
+                        </div>
+                        {% if current_user.avatar_url %}
+                        <img src="{{ url_for('static', filename=current_user.avatar_url) }}" class="topbar-avatar object-fit-cover ms-auto" alt="{{ current_user.first_name or current_user.username }} profile picture">
+                        {% else %}
+                        <div class="topbar-avatar avatar-pill ms-auto" aria-hidden="true">{{ (current_user.first_name or current_user.username)[0] }}{% if current_user.last_name %}{{ current_user.last_name[0] }}{% endif %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+            <main class="col-12 p-4 auth-shell">
+            {% endif %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% if current_user.is_authenticated and request.endpoint != 'main.index' and emergency_alert %}
+    <div class="modal fade show d-block" id="emergency-alert-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="emergency-alert-title">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger border-2 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="emergency-alert-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ emergency_alert.severity }} Emergency: {{ emergency_alert.alert_type }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-dismiss-emergency-alert aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">{{ emergency_alert.message }}</p>
+                    <small class="text-muted">Issued {{ emergency_alert.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss-emergency-alert>Close</button>
+                    <form method="post" action="{{ url_for('emergency.acknowledge', alert_id=emergency_alert.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle me-1"></i>Acknowledge</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" id="emergency-alert-backdrop"></div>
+    {% endif %}
+    {% if current_user.is_authenticated and request.endpoint != 'main.index' %}
+    <section class="chatbot-widget" aria-label="Society Assistant">
+        <button class="chatbot-toggle" type="button" title="Open Society Assistant" aria-label="Open Society Assistant" aria-expanded="false" aria-controls="chatbot-panel">
+            <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+            <span class="visually-hidden">Assistant</span>
+        </button>
+        <div class="chatbot-panel" id="chatbot-panel" hidden>
+            <div class="chatbot-header">
+                <div>
+                    <strong>Society Assistant</strong>
+                    <div class="small opacity-75">{% if is_admin %}Administrator support{% else %}Ask about your society services{% endif %}</div>
+                </div>
+                <button class="chatbot-close" type="button" aria-label="Close assistant"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="chatbot-messages" aria-live="polite">
+                <div class="chatbot-message chatbot-message-bot">Hello. How can I help with your society account?</div>
+            </div>
+            <div class="chatbot-quick-actions">
+                {% if is_admin %}
+                <button type="button" data-question="How are bills generated?">Generate bills</button>
+                <button type="button" data-question="How do I manage maintenance?">Maintenance</button>
+                <button type="button" data-question="How do I manage complaints?">Complaints</button>
+                {% else %}
+                <button type="button" data-question="What bills do I have?">My bills</button>
+                <button type="button" data-question="How do I pay?">How to pay</button>
+                <button type="button" data-question="How do I submit maintenance?">Maintenance</button>
+                {% endif %}
+            </div>
+            <form class="chatbot-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input class="chatbot-input" type="text" maxlength="500" placeholder="Ask a question..." aria-label="Question" required>
+                <button class="chatbot-send" type="submit" aria-label="Send question"><i class="bi bi-send-fill"></i></button>
+            </form>
+        </div>
+    </section>
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% if current_user.is_authenticated %}
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+    {% endif %}
+    <script>
+        const toggle = document.getElementById('themeToggle');
+        const root = document.documentElement;
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            root.setAttribute('data-theme', storedTheme);
+            root.setAttribute('data-bs-theme', storedTheme);
+        }
+        toggle?.addEventListener('click', () => {
+            const current = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', current);
+            root.setAttribute('data-bs-theme', current);
+            localStorage.setItem('theme', current);
+        });
+
+        document.querySelectorAll('.back-btn').forEach((button) => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                const fallbackUrl = this.dataset.fallbackUrl || '/';
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else if (fallbackUrl) {
+                    window.location.assign(fallbackUrl);
+                } else {
+                    window.location.assign('/');
+                }
+            });
+        });
+
+        const chatbotToggle = document.querySelector('.chatbot-toggle');
+        const chatbotPanel = document.querySelector('.chatbot-panel');
+        const chatbotClose = document.querySelector('.chatbot-close');
+        const chatbotForm = document.querySelector('.chatbot-form');
+        const chatbotMessages = document.querySelector('.chatbot-messages');
+        const chatbotInput = document.querySelector('.chatbot-input');
+
+        const addChatbotMessage = (message, sender) => {
+            const element = document.createElement('div');
+            element.className = `chatbot-message chatbot-message-${sender}`;
+            element.textContent = message;
+            chatbotMessages.appendChild(element);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        };
+
+        const sendChatbotQuestion = async (question) => {
+            addChatbotMessage(question, 'user');
+            try {
+                const response = await fetch('{{ url_for("chatbot.chatbot_message") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('.chatbot-form input[name="csrf_token"]').value
+                    },
+                    body: JSON.stringify({message: question})
+                });
+                const data = await response.json();
+                addChatbotMessage(response.ok ? data.reply : (data.error || 'Please try again.'), 'bot');
+            } catch (error) {
+                addChatbotMessage('The assistant is temporarily unavailable. Please try again.', 'bot');
+            }
+        };
+
+        chatbotToggle?.addEventListener('click', () => {
+            const isHidden = chatbotPanel.hidden;
+            chatbotPanel.hidden = !isHidden;
+            chatbotToggle.setAttribute('aria-expanded', String(isHidden));
+            if (isHidden) chatbotInput.focus();
+        });
+        chatbotClose?.addEventListener('click', () => {
+            chatbotPanel.hidden = true;
+            chatbotToggle.setAttribute('aria-expanded', 'false');
+        });
+        document.querySelectorAll('.chatbot-quick-actions button').forEach((button) => {
+            button.addEventListener('click', () => sendChatbotQuestion(button.dataset.question));
+        });
+        chatbotForm?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const question = chatbotInput.value.trim();
+            if (!question) return;
+            chatbotInput.value = '';
+            sendChatbotQuestion(question);
+        });
+
+        document.querySelectorAll('[data-dismiss-emergency-alert]').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.getElementById('emergency-alert-modal')?.classList.remove('show', 'd-block');
+                document.getElementById('emergency-alert-backdrop')?.remove();
+            });
+        });
+    </script>
+</body>
+</html>

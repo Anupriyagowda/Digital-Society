@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Activities{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Community Activities</h4>
+            <p class="text-muted small mb-0">Browse all available activities and register to participate.</p>
+        </div>
+        <span class="badge bg-info">{{ activities|length }} activities</span>
+    </div>
+
+    {% if activities %}
+    <div class="list-group">
+        {% for activity in activities %}
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+                <div class="fw-semibold">{{ activity.title }}</div>
+                <div class="small text-muted">{{ activity.description or 'No description available.' }}{% if activity.event %} • {{ activity.event.title }}{% endif %}</div>
+            </div>
+            <div class="text-end">
+                <div class="small text-muted mb-2">Limit: {{ activity.max_participants }}</div>
+                {% if activity.id in registrations %}
+                <span class="badge bg-success mb-2">Registered</span>
+                {% endif %}
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('resident.activity_detail', activity_id=activity.id) }}">View</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No activities are available right now.</p>
+    {% endif %}
+</div>
+{% endblock %}

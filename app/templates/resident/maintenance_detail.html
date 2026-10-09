@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance Request Detail{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Maintenance Request</h3>
+        <p class="text-muted small mb-0">Track the status of your request.</p>
+    </div>
+    <a class="btn btn-sm back-btn" href="{{ url_for('resident.maintenance') }}" data-fallback-url="{{ url_for('resident.maintenance') }}"><i class="bi bi-arrow-left me-2"></i>Back to your requests</a>
+</div>
+<div class="glass-card p-4">
+    <h5 class="fw-semibold">{{ maintenance.title }}</h5>
+    <p class="text-muted mb-2">Assigned staff: {{ (maintenance.staff.first_name or maintenance.staff.username) if maintenance.staff else 'Unassigned' }}</p>
+    <p class="mb-3">{{ maintenance.description }}</p>
+    <p><strong>Status:</strong> <span class="badge bg-{{ 'warning' if maintenance.status == 'Pending' else 'success' if maintenance.status in ['Completed', 'Resolved'] else 'info' }}">{{ maintenance.status }}</span></p>
+    <p><strong>Priority:</strong> {{ maintenance.priority }}</p>
+    <a class="btn btn-sm btn-outline-primary" target="_blank" href="{{ url_for('resident.download_maintenance', request_id=maintenance.id, preview=1) }}"><i class="bi bi-eye me-2"></i>Preview PDF</a>
+</div>
+<div class="glass-card p-4 mt-4">
+    <h5 class="fw-semibold mb-3">Request History</h5>
+    <ul class="list-group list-group-flush">
+        {% for history in maintenance.histories %}
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong>{{ history.status }}</strong>
+                    <div class="small text-muted">{{ history.note }}</div>
+                </div>
+                <div class="small text-muted">{{ history.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Amenity Booking{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold mb-1">Reserve a community space</h5>
+            <p class="text-muted small mb-4">Requests are sent to the society administrator for approval.</p>
+            {% if amenities %}
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Amenity</label>
+                    <select class="form-select" id="amenity_id" name="amenity_id" required>
+                        <option value="">Choose an amenity</option>
+                        {% for amenity in amenities %}
+                        <option value="{{ amenity.id }}" data-opening="{{ amenity.opening_time.strftime('%H:%M') if amenity.opening_time else '' }}" data-closing="{{ amenity.closing_time.strftime('%H:%M') if amenity.closing_time else '' }}">{{ amenity.name }}{% if amenity.location %} - {{ amenity.location }}{% endif %}{% if amenity.opening_time and amenity.closing_time %} ({{ amenity.opening_time.strftime('%H:%M') }} - {{ amenity.closing_time.strftime('%H:%M') }}){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text" id="amenity-hours">Select an amenity to see its operating hours.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <input class="form-control" type="date" name="booking_date" min="{{ today }}" required>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-6"><label class="form-label">Start time</label><input class="form-control" id="start_time" type="time" name="start_time" required></div>
+                    <div class="col-6"><label class="form-label">End time</label><input class="form-control" id="end_time" type="time" name="end_time" required></div>
+                </div>
+                <div class="mb-3"><label class="form-label">Purpose <span class="text-muted">(optional)</span></label><input class="form-control" name="purpose" maxlength="255"></div>
+                <button class="btn btn-primary w-100" type="submit">Request booking</button>
+            </form>
+            {% else %}
+            <p class="text-muted mb-0">No amenities are currently available for booking.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0">Your bookings</h5><span class="badge badge-soft">History</span></div>
+            {% if bookings %}
+            <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Amenity</th><th>Date and time</th><th>Status</th><th></th></tr></thead><tbody>
+            {% for booking in bookings %}
+            <tr><td><div class="fw-semibold">{{ booking.amenity.name }}</div><small class="text-muted">{{ booking.purpose or 'Community use' }}</small></td><td>{{ booking.booking_date.strftime('%d %b %Y') }}<br><small class="text-muted">{{ booking.start_time.strftime('%H:%M') }} - {{ booking.end_time.strftime('%H:%M') }}</small></td><td><span class="badge {% if booking.status == 'Approved' %}bg-success{% elif booking.status == 'Rejected' or booking.status == 'Cancelled' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ booking.status }}</span></td><td>{% if booking.status in ['Pending', 'Approved'] %}<form method="post" action="{{ url_for('resident.cancel_amenity_booking', booking_id=booking.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button></form>{% endif %}</td></tr>
+            {% endfor %}
+            </tbody></table></div>
+            {% else %}<p class="text-muted mb-0">You have not requested any amenity bookings.</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% if amenities %}
+<script>
+    const amenitySelect = document.getElementById('amenity_id');
+    const hoursHint = document.getElementById('amenity-hours');
+    const startTime = document.getElementById('start_time');
+    const endTime = document.getElementById('end_time');
+
+    amenitySelect.addEventListener('change', () => {
+        const selected = amenitySelect.options[amenitySelect.selectedIndex];
+        const opening = selected.dataset.opening;
+        const closing = selected.dataset.closing;
+
+        if (opening && closing) {
+            hoursHint.textContent = `Operating hours: ${opening} to ${closing}`;
+            startTime.min = opening;
+            startTime.max = closing;
+            endTime.min = opening;
+            endTime.max = closing;
+        } else {
+            hoursHint.textContent = 'Operating hours are not specified for this amenity.';
+            startTime.removeAttribute('min');
+            startTime.removeAttribute('max');
+            endTime.removeAttribute('min');
+            endTime.removeAttribute('max');
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

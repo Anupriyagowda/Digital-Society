@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Staff{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('owner.staff_management') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">{{ action }} Staff Member</h4>
+            <p class="text-muted small mb-0">Use this form to {{ action|lower() }} a security or maintenance user.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('owner.staff_management') }}">Back</a>
+    </div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Username</label>
+                <input class="form-control" name="username" value="{{ staff.username if staff else '' }}" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input class="form-control" type="email" name="email" value="{{ staff.email if staff else '' }}" required />
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">First Name</label>
+                <input class="form-control" name="first_name" value="{{ staff.first_name if staff else '' }}" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Last Name</label>
+                <input class="form-control" name="last_name" value="{{ staff.last_name if staff else '' }}" />
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input class="form-control" name="phone" value="{{ staff.phone if staff else '' }}" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <select class="form-select" name="role_name" required>
+                    <option value="">Select role</option>
+                    {% for role in roles %}
+                    <option value="{{ role.name }}" {% if staff and staff.role.name == role.name %}selected{% endif %}>{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Password</label>
+                <input class="form-control" type="password" name="password" {% if action == 'Create' %}required{% endif %} placeholder="{{ 'Set password' if action == 'Create' else 'Leave blank to keep current password' }}" />
+            </div>
+            <div class="col-md-6">
+                <div class="form-check mt-4 pt-2">
+                    <input class="form-check-input" type="checkbox" id="approvedCheck" name="is_approved" {% if staff and staff.is_approved %}checked{% endif %}>
+                    <label class="form-check-label" for="approvedCheck">Active</label>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary">{{ action }} Staff</button>
+    </form>
+</div>
+{% endblock %}

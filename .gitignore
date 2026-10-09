@@ -1,0 +1,13 @@
+.venv/
+.venv-1/
+.venv-bak/
+__pycache__/
+*.py[cod]
+.env
+.vscode/
+instance/
+
+digital_society.db
+check_db.py
+activity_test_output.txt
+test_output.txt

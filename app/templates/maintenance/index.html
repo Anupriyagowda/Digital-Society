@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+    <button class="btn btn-sm btn-outline-secondary back-btn" type="button" data-fallback-url="{{ url_for('resident.index') }}">
+        <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+</div>
+<div class="card p-4">
+    <h4>Maintenance Requests</h4>
+    <ul class="list-group list-group-flush">
+        {% for request in requests %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ url_for('maintenance.maintenance_detail', request_id=request.id) }}" class="fw-semibold text-decoration-none">{{ request.title }}</a>
+                <div class="small text-muted">{{ request.priority }} priority</div>
+            </div>
+            <span class="badge bg-{{ 'warning' if request.status == 'Pending' else 'success' if request.status in ['Completed', 'Resolved'] else 'info' }}">{{ request.status }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

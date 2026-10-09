@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}Resident Details - Digital Society{% endblock %}
+{% block content %}
+<div class="back-nav-shell mb-3">
+  <a href="{{ url_for('owner.residents') }}" class="btn btn-sm back-btn" data-fallback-url="{{ url_for('owner.residents') }}"><i class="bi bi-arrow-left me-2"></i>Back to residents</a>
+</div>
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        {% if resident.user.avatar_url %}
+          <img src="{{ url_for('static', filename=resident.user.avatar_url) }}" class="rounded-circle mb-3 object-fit-cover" alt="{{ resident.user.first_name or resident.user.username }} profile picture" width="120" height="120">
+        {% else %}
+          <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:120px;height:120px;font-size:40px">{{ (resident.user.first_name or resident.user.username)[0]|upper }}</div>
+        {% endif %}
+        <h5 class="card-title mb-0">{{ resident.user.first_name or resident.user.username }}{% if resident.user.last_name %} {{ resident.user.last_name }}{% endif %}</h5>
+        <p class="text-muted small mb-1">{{ resident.user.email }}</p>
+        <p class="text-muted small">{{ resident.user.phone or '—' }}</p>
+        <hr>
+        <p class="mb-1"><strong>Flat</strong></p>
+        <p class="text-muted small">{{ resident.flat.number if resident.flat else 'Unassigned' }}</p>
+        <p class="mb-0"><strong>Status</strong></p>
+        <p class="text-muted small">{{ resident.approval_status }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">Automatic billing schedule</h5>
+            <p class="text-muted small mb-0">Set when the next monthly bill is generated and when it is due.</p>
+          </div>
+          <span class="badge badge-soft">Active</span>
+        </div>
+        <form method="post" action="{{ url_for('admin.residents') }}" class="row g-2 align-items-end">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="col-md-3">
+            <label class="form-label small" for="generation_day">Generation day</label>
+            <input class="form-control" id="generation_day" name="generation_day" type="number" min="1" max="28" value="{{ billing_generation_day }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small" for="generation_time">Generation time</label>
+            <input class="form-control" id="generation_time" name="generation_time" type="time" value="{{ billing_generation_time }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small" for="due_day">Due day next month</label>
+            <input class="form-control" id="due_day" name="due_day" type="number" min="1" max="28" value="{{ billing_due_day }}" required>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-calendar-check me-1"></i>Save schedule</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3">Edit Resident</h5>
+        <form method="post" action="{{ url_for('owner.edit_resident', resident_id=resident.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-control" name="first_name" value="{{ resident.user.first_name or '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-control" name="last_name" value="{{ resident.user.last_name or '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" value="{{ resident.user.email or '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" name="phone" value="{{ resident.user.phone or '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Flat Number</label>
+              <input type="text" class="form-control" name="flat_number" value="{{ resident.flat.number if resident.flat else '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Resident Type</label>
+              <select class="form-select" name="resident_type" required>
+                <option value="Flat Owner" {% if resident.resident_type == 'Flat Owner' %}selected{% endif %}>Flat Owner</option>
+                <option value="Tenant" {% if resident.resident_type == 'Tenant' %}selected{% endif %}>Tenant</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Emergency Contact</label>
+              <input type="text" class="form-control" name="emergency_contact" value="{{ resident.emergency_contact or '' }}">
+            </div>
+          </div>
+          <button class="btn btn-primary mt-3">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <ul class="nav nav-tabs mb-3" id="residentTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="bills-tab" data-bs-toggle="tab" data-bs-target="#bills" type="button" role="tab">Bills ({{ bills|length }})</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="complaints-tab" data-bs-toggle="tab" data-bs-target="#complaints" type="button" role="tab">Complaints ({{ complaints|length }})</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="maintenance-tab" data-bs-toggle="tab" data-bs-target="#maintenance" type="button" role="tab">Maintenance ({{ maintenance|length }})</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="bills" role="tabpanel">
+            {% set current_bill = bills[0] if bills else None %}
+            <div class="border rounded p-3 mb-3">
+              <h6 class="fw-bold mb-3">Manage billing record</h6>
+              <form method="post" action="{{ url_for('owner.manage_resident_bill', resident_id=resident.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="bill_id" value="{{ current_bill.id if current_bill else '' }}" />
+                <div class="row g-2">
+                  <div class="col-md-3">
+                    <label class="form-label small">Bill Type</label>
+                    <select class="form-select form-select-sm" name="bill_type">
+                      <option value="Maintenance Charges" {% if (current_bill and current_bill.bill_type == 'Maintenance Charges') or (not current_bill and resident.resident_type == 'Flat Owner') %}selected{% endif %}>Maintenance Charges</option>
+                      <option value="Monthly Rent" {% if (current_bill and current_bill.bill_type == 'Monthly Rent') or (not current_bill and resident.resident_type == 'Tenant') %}selected{% endif %}>Monthly Rent</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small">Amount</label>
+                    <input type="number" step="0.01" class="form-control form-control-sm" name="amount" value="{{ '%.2f'|format(current_bill.amount) if current_bill else '' }}" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small">Due Date</label>
+                    <input type="date" class="form-control form-control-sm" name="due_date" value="{{ current_bill.due_date.strftime('%Y-%m-%d') if current_bill and current_bill.due_date else '' }}" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small">Payment Status</label>
+                    <select class="form-select form-select-sm" name="payment_status">
+                      <option value="Pending" {% if current_bill and current_bill.payment_status == 'Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Paid" {% if current_bill and current_bill.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small">Description</label>
+                    <input type="text" class="form-control form-control-sm" name="description" value="{{ current_bill.description or '' }}">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small">Payment Date</label>
+                    <input type="date" class="form-control form-control-sm" name="payment_date" value="{{ current_bill.payment_date.strftime('%Y-%m-%d') if current_bill and current_bill.payment_date else '' }}">
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-sm mt-3">Save Bill</button>
+              </form>
+            </div>
+            {% if bills %}
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Due</th>
+                    <th class="text-end">Amount</th>
+                    <th>Payment Status</th>
+                    <th>Payment Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for bill in bills %}
+                  <tr>
+                    <td>{{ bill.bill_type }}</td>
+                    <td>{{ bill.description or '—' }}</td>
+                    <td>{{ bill.due_date.strftime('%Y-%m-%d') if bill.due_date else '—' }}</td>
+                    <td class="text-end">{{ '%.2f'|format(bill.amount) }}</td>
+                    <td><span class="badge bg-{{ 'warning' if (bill.payment_status or bill.status) == 'Pending' else 'success' }}">{{ bill.payment_status or bill.status }}</span></td>
+                    <td>{{ bill.payment_date.strftime('%Y-%m-%d') if bill.payment_date else '—' }}</td>
+                    <td>
+                      <form method="post" action="{{ url_for('owner.mark_resident_bill_paid', resident_id=resident.id, bill_id=bill.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button class="btn btn-outline-success btn-sm">Mark Paid</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+              <p class="text-muted small">No bills found for this resident.</p>
+            {% endif %}
+          </div>
+
+          <div class="tab-pane fade" id="complaints" role="tabpanel">
+            {% if complaints %}
+              <div class="list-group">
+                {% for c in complaints %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ c.title }}</h6>
+                    <small class="text-muted">{{ c.created_at.strftime('%Y-%m-%d') }}</small>
+                  </div>
+                  <p class="mb-1">{{ c.description }}</p>
+                  <small class="text-muted">Status: {{ c.status }}</small>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted small">No complaints recorded.</p>
+            {% endif %}
+          </div>
+
+          <div class="tab-pane fade" id="maintenance" role="tabpanel">
+            {% if maintenance %}
+              <div class="list-group">
+                {% for m in maintenance %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ m.title }}</h6>
+                    <small class="text-muted">{{ m.created_at.strftime('%Y-%m-%d') }}</small>
+                  </div>
+                  <p class="mb-1">{{ m.description }}</p>
+                  <small class="text-muted">Status: {{ m.status }}</small>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted small">No maintenance requests.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3">Private household information</h5>
+        <h6>Family members</h6>
+        {% for member in family_members %}<p class="small mb-1">{{ member.name }} ({{ member.relationship }}){% if member.is_dependent %} <span class="badge bg-info">Dependent</span>{% endif %}</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}
+        <h6 class="mt-3">Emergency contacts</h6>
+        {% for contact in emergency_contacts %}<p class="small mb-1">{{ contact.name }} ({{ contact.relationship }}) - {{ contact.phone }}</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}
+        <h6 class="mt-3">Authorized people</h6>
+        {% for person in authorized_people %}<p class="small mb-1">{{ person.name }}{% if person.relationship %} ({{ person.relationship }}){% endif %} - {{ person.phone or 'No phone' }}</p>{% else %}<p class="text-muted small">None added.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
